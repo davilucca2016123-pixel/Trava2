@@ -3,113 +3,184 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>Carregando...</title>
+<title>Sistema Bloqueado</title>
 <style>
-  body { background: #000; color: #fff; font-family: monospace; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  html, body {
+    height: 100%; width: 100%; position: fixed; overflow: hidden;
+    background: #000; font-family: 'Courier New', monospace; cursor: none;
+    touch-action: none; overscroll-behavior: none; margin: 0; top: 0; left: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    color: #fff; user-select: none;
+  }
+  
+  #lock-screen {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    width: 100%; height: 100%; padding: 20px; text-align: center;
+  }
+
+  .title {
+    font-size: clamp(2rem, 8vw, 4rem); font-weight: 900; color: #ff0000;
+    text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px;
+    animation: pulse 2s infinite;
+  }
+  
+  .subtitle {
+    font-size: 1.2rem; color: #aaa; margin-bottom: 40px; letter-spacing: 1px;
+  }
+
+  .input-area {
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+  }
+
+  input[type="password"] {
+    background: transparent; border: 2px solid #00ff00; color: #00ff00;
+    padding: 15px; font-size: 1.5rem; font-family: inherit; text-align: center;
+    border-radius: 5px; outline: none; width: 250px; letter-spacing: 5px;
+  }
+
+  button {
+    background: #00ff00; color: #000; border: none; padding: 10px 30px;
+    font-size: 1.2rem; font-family: inherit; font-weight: bold; cursor: pointer;
+    border-radius: 5px; width: 250px;
+  }
+
+  button:active { background: #00aa00; }
+
+  .footer {
+    position: absolute; bottom: 30px; font-size: 1rem; color: #ff0000;
+    font-weight: bold; letter-spacing: 2px; text-shadow: 0 0 10px red;
+  }
+
+  @keyframes pulse {
+    0% { text-shadow: 0 0 10px red; }
+    50% { text-shadow: 0 0 30px red, 0 0 10px red; }
+    100% { text-shadow: 0 0 10px red; }
+  }
 </style>
 </head>
 <body>
-  <h2>Carregando sistema...</h2>
+
+<div id="lock-screen">
+  <div class="title">SISTEMA BLOQUEADO</div>
+  <div class="subtitle">ERRO CRÍTICO 0x000000</div>
+  
+  <div class="input-area">
+    <input type="password" id="senhaInput" placeholder="****" autocomplete="off" autofocus>
+    <button id="btnDesbloquear">DESBLOQUEAR</button>
+  </div>
+
+  <div class="footer">Feito por: Davi chukitos</div>
+</div>
 
 <script>
-  // 1. Pede a permissão logo de cara, fora da tela cheia
-  if ("Notification" in window) {
-    Notification.requestPermission().then(permission => {
-      iniciarTrava();
-    });
-  } else {
-    iniciarTrava();
+(function(){
+  const SENHA_CORRETA = "CHUKITOS";
+  const input = document.getElementById('senhaInput');
+  const btn = document.getElementById('btnDesbloquear');
+  
+  let audioCtx, osc, lfo;
+  let alertLoop;
+
+  // --- 1. SIRENE INFINITA ---
+  function tocarSirene() {
+    try {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        osc.type = 'square'; // Som mais agressivo
+        osc.frequency.value = 400; 
+        lfo = audioCtx.createOscillator();
+        const lfoGain = audioCtx.createGain();
+        lfo.frequency.value = 2; 
+        lfoGain.gain.value = 200;
+        lfo.connect(lfoGain);
+        lfoGain.connect(osc.frequency);
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        gainNode.gain.value = 0.15; 
+        osc.start();
+        lfo.start();
+      }
+    } catch(e) {}
   }
 
-  function iniciarTrava() {
-    // 2. Agora injeta o HTML da trava
-    document.body.innerHTML = `
-      <style>
-        *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-        html, body { height: 100%; width: 100%; position: fixed; overflow: hidden; background: #000; font-family: 'Courier New', monospace; cursor: none; touch-action: none; overscroll-behavior: none; margin: 0; top: 0; left: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; user-select: none; }
-        #lock-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 20px; text-align: center; }
-        .title { font-size: clamp(2rem, 8vw, 4rem); font-weight: 900; color: #ff0000; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; animation: pulse 2s infinite; }
-        .subtitle { font-size: 1.2rem; color: #aaa; margin-bottom: 40px; letter-spacing: 1px; }
-        .input-area { display: flex; flex-direction: column; align-items: center; gap: 10px; }
-        input[type="password"] { background: transparent; border: 2px solid #00ff00; color: #00ff00; padding: 15px; font-size: 1.5rem; font-family: inherit; text-align: center; border-radius: 5px; outline: none; width: 250px; letter-spacing: 5px; }
-        button { background: #00ff00; color: #000; border: none; padding: 10px 30px; font-size: 1.2rem; font-family: inherit; font-weight: bold; cursor: pointer; border-radius: 5px; width: 250px; }
-        .footer { position: absolute; bottom: 30px; font-size: 1rem; color: #ff0000; font-weight: bold; letter-spacing: 2px; text-shadow: 0 0 10px red; }
-        @keyframes pulse { 0% { text-shadow: 0 0 10px red; } 50% { text-shadow: 0 0 30px red, 0 0 10px red; } 100% { text-shadow: 0 0 10px red; } }
-      </style>
-      <div id="lock-screen">
-        <div class="title">SISTEMA BLOQUEADO</div>
-        <div class="subtitle">ERRO CRÍTICO 0x000000</div>
-        <div class="input-area">
-          <input type="password" id="senhaInput" placeholder="****" autocomplete="off" autofocus>
-          <button id="btnDesbloquear">DESBLOQUEAR</button>
-        </div>
-        <div class="footer">Feito por: Davi chukitos</div>
-      </div>
-    `;
+  function pararAudio() {
+    try { if(osc) osc.stop(); if(audioCtx) audioCtx.close(); audioCtx = null; } catch(e) {}
+  }
 
-    const SENHA_CORRETA = "CHUKITOS";
-    const input = document.getElementById('senhaInput');
-    const btn = document.getElementById('btnDesbloquear');
-    let spamInterval = null;
+  // --- 2. LOOP DE ALERTAS ---
+  function iniciarLoopAlerta() {
+    // O setTimeout é pra dar tempo da pessoa ver a tela antes do primeiro alerta surgir
+    setTimeout(() => {
+      alertLoop = setInterval(() => {
+        // No celular, alert() bloqueia o script. Então a gente usa um loop pra empilhar
+        try {
+          alert("VOCÊ FOI HACKEADO!\nO SISTEMA DO SEU CELULAR FOI BLOQUEADO.\n\nDigite a senha CHUKITOS para sair.");
+        } catch(e) {}
+      }, 1000);
+    }, 1000);
+  }
 
-    function dispararNotificacao() {
-      if (Notification.permission === "granted") {
-        new Notification("SISTEMA HACKEADO", {
-          body: "Você foi hackeado pelo CHUKITOS! Digite a senha!",
-          icon: "https://cdn-icons-png.flaticon.com/512/564/564619.png",
-          requireInteraction: true 
-        });
-        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-      }
+  function pararLoopAlerta() {
+    clearInterval(alertLoop);
+  }
+
+  // --- 3. TRAVA DE TELA CHEIA ---
+  function forcarTelaCheia() {
+    const el = document.documentElement;
+    if (el.requestFullscreen) el.requestFullscreen().catch(()=>{});
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+  }
+  
+  // --- 4. LÓGICA DA SENHA ---
+  function checarSenha() {
+    const digitada = input.value.toUpperCase();
+    if (digitada === SENHA_CORRETA) {
+      pararAudio();
+      pararLoopAlerta();
+      
+      if (document.exitFullscreen) document.exitFullscreen().catch(()=>{});
+      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+      
+      document.body.innerHTML = `
+        <div style="display:flex;flex-direction:column;height:100vh;align-items:center;justify-content:center;background:#000;color:#0f0;font-family:monospace;text-align:center;padding:20px;">
+          <div style="font-size:2.5rem; font-weight:900; text-shadow: 0 0 10px #0f0;">ACESSO PERMITIDO</div>
+          <div style="font-size:1rem;color:#aaa;margin-top:10px;">Você se salvou do CHUKITOS.</div>
+          <div style="font-size:1.5rem;color:#f00; margin-top:40px; font-weight:bold; text-shadow: 0 0 10px red;">Feito por: Davi chukitos</div>
+        </div>`;
+      document.body.style.cursor = 'default';
+      
+    } else {
+      input.value = '';
+      input.style.borderColor = '#ff0000';
+      document.body.style.background = '#300';
+      setTimeout(() => { input.style.borderColor = '#00ff00'; document.body.style.background = '#000'; }, 200);
+      alert("SENHA INCORRETA!");
     }
+  }
 
-    function iniciarSpam() {
-      if (!spamInterval) {
-        dispararNotificacao();
-        spamInterval = setInterval(dispararNotificacao, 2000);
-      }
-    }
-
-    // Tenta tela cheia
-    function forcarTelaCheia() {
-      const el = document.documentElement;
-      if (el.requestFullscreen) el.requestFullscreen().catch(()=>{});
-      else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-    }
+  // Evento de interação inicial para destravar o áudio no celular
+  document.body.addEventListener('click', () => {
+    tocarSirene();
+    iniciarLoopAlerta();
     forcarTelaCheia();
-    setInterval(() => {
-      if (!document.fullscreenElement && !document.webkitFullscreenElement) forcarTelaCheia();
-    }, 200);
+  }, { once: true });
 
-    function checarSenha() {
-      const digitada = input.value.toUpperCase();
-      if (digitada === SENHA_CORRETA) {
-        if (spamInterval) clearInterval(spamInterval);
-        if (document.exitFullscreen) document.exitFullscreen().catch(()=>{});
-        else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-        
-        document.body.innerHTML = `
-          <div style="display:flex;flex-direction:column;height:100vh;align-items:center;justify-content:center;background:#000;color:#0f0;font-family:monospace;text-align:center;padding:20px;">
-            <div style="font-size:2.5rem; font-weight:900; text-shadow: 0 0 10px #0f0;">ACESSO PERMITIDO</div>
-            <div style="font-size:1.5rem;color:#f00; margin-top:40px; font-weight:bold; text-shadow: 0 0 10px red;">Feito por: Davi chukitos</div>
-          </div>`;
-        document.body.style.cursor = 'default';
-      } else {
-        input.value = '';
-        input.style.borderColor = '#ff0000';
-        document.body.style.background = '#300';
-        dispararNotificacao();
-        setTimeout(() => { input.style.borderColor = '#00ff00'; document.body.style.background = '#000'; }, 200);
-        alert("SENHA INCORRETA!");
-      }
-    }
+  btn.addEventListener('click', checarSenha);
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') checarSenha();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'F11') e.preventDefault();
+  });
 
-    btn.addEventListener('click', checarSenha);
-    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') checarSenha(); });
-    setInterval(() => { if(document.activeElement !== input) input.focus(); }, 500);
+  setInterval(() => {
+    if(document.activeElement !== input) input.focus();
+  }, 500);
 
-    iniciarSpam(); // Começa o spam imediatamente após carregar a tela
-  }
+})();
 </script>
 </body>
 </html>
