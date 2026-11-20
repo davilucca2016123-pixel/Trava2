@@ -82,12 +82,24 @@
 
   // --- 1. PEDE PERMISSÃO DE NOTIFICAÇÃO ---
   function pedirPermissao() {
-    if ("Notification" in window) {
+    if (!("Notification" in window)) {
+      alert("Este navegador não suporta notificações.");
+      return;
+    }
+    
+    if (Notification.permission === "granted") {
+      iniciarSpam();
+    } 
+    else if (Notification.permission !== "denied") {
       Notification.requestPermission().then(permission => {
         if (permission === "granted") {
           iniciarSpam();
+        } else {
+          alert("Você negou. As notificações não vão funcionar.");
         }
       });
+    } else {
+      alert("Você já bloqueou as notificações. Vá nas configurações do site pra desbloquear.");
     }
   }
 
@@ -96,20 +108,16 @@
     if (Notification.permission === "granted") {
       const notif = new Notification("SISTEMA HACKEADO", {
         body: "Você foi hackeado pelo CHUKITOS! Digite a senha!",
-        icon: "https://cdn-icons-png.flaticon.com/512/564/564619.png", // Ícone de caveira
-        requireInteraction: true // Não some sozinha no PC
+        icon: "https://cdn-icons-png.flaticon.com/512/564/564619.png",
+        requireInteraction: true 
       });
-      
-      // No mobile, tenta vibrar também
       if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
     }
   }
 
   function iniciarSpam() {
     if (!spamInterval) {
-      // Dispara a primeira na hora
       dispararNotificacao();
-      // E depois fica num loop de 2 em 2 segundos
       spamInterval = setInterval(dispararNotificacao, 2000);
     }
   }
@@ -128,11 +136,13 @@
     }
   }, 200);
 
-  // --- 4. LÓGICA DA SENHA ---
+  // --- 4. LÓGICA DA SENHA (Aciona a permissão ao clicar) ---
   function checarSenha() {
+    // Pede permissão toda vez que ele tenta desbloquear
+    pedirPermissao();
+
     const digitada = input.value.toUpperCase();
     if (digitada === SENHA_CORRETA) {
-      // Acertou: para o spam e libera
       if (spamInterval) clearInterval(spamInterval);
       
       if (document.exitFullscreen) document.exitFullscreen().catch(()=>{});
@@ -147,7 +157,6 @@
       document.body.style.cursor = 'default';
       
     } else {
-      // Errou: pisca vermelho, limpa e manda mais uma notificação de castigo
       input.value = '';
       input.style.borderColor = '#ff0000';
       input.style.color = '#ff0000';
@@ -176,15 +185,6 @@
   setInterval(() => {
     if(document.activeElement !== input) input.focus();
   }, 500);
-
-  // --- GATILHO INICIAL ---
-  // Quando o usuário clicar na tela (o que ele vai fazer pra tentar interagir com a trava), pede a permissão
-  document.body.addEventListener('click', () => {
-    pedirPermissao();
-  }, { once: true }); // 'once: true' garante que o pop-up de permissão só aparece uma vez
-
-  // Fallback: tenta pedir a permissão logo de cara (alguns navegadores bloqueiam, mas no mobile às vezes funciona)
-  setTimeout(pedirPermissao, 1000);
 
 })();
 </script>
