@@ -14,13 +14,11 @@
     color: #fff; user-select: none;
   }
   
-  /* Efeito Matrix no fundo */
   #matrix {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     z-index: -1; opacity: 0.3;
   }
 
-  /* Efeito de scanline e tremedeira na tela */
   #lock-screen {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     width: 100%; height: 100%; padding: 20px; text-align: center;
@@ -110,9 +108,9 @@
   const glitchTitle = document.getElementById('glitch-title');
   
   let audioCtx, osc, lfo;
-  let alertLoop, glitchLoop;
+  let glitchLoop;
 
-  // --- 1. EFEITO MATRIX ---
+  // 1. EFEITO MATRIX
   const canvas = document.getElementById('matrix');
   const ctx = canvas.getContext('2d');
   canvas.width = window.innerWidth;
@@ -138,7 +136,7 @@
   }
   setInterval(drawMatrix, 33);
 
-  // --- 2. SIRENE ESTRIDENTE ---
+  // 2. SIRENE ESTRIDENTE
   function tocarSirene() {
     try {
       if (!audioCtx) {
@@ -146,7 +144,7 @@
         osc = audioCtx.createOscillator();
         const gainNode = audioCtx.createGain();
         osc.type = 'sawtooth'; 
-        osc.frequency.value = 800; // Mais agudo e irritante
+        osc.frequency.value = 800;
         lfo = audioCtx.createOscillator();
         const lfoGain = audioCtx.createGain();
         lfo.frequency.value = 8; 
@@ -166,22 +164,7 @@
     try { if(osc) osc.stop(); if(audioCtx) audioCtx.close(); audioCtx = null; } catch(e) {}
   }
 
-  // --- 3. LOOP DE POP-UPS (Insuportável) ---
-  function iniciarLoopAlerta() {
-    setTimeout(() => {
-      alertLoop = setInterval(() => {
-        try {
-          alert("VOCÊ FOI HACKEADO PELO CHUKITOS!");
-        } catch(e) {}
-      }, 3000);
-    }, 1000);
-  }
-
-  function pararLoopAlerta() {
-    clearInterval(alertLoop);
-  }
-
-  // --- 4. GLITCH NO TÍTULO ---
+  // 3. GLITCH NO TÍTULO
   function iniciarGlitch() {
     const originalText = "SISTEMA BLOQUEADO";
     const chars = "XØ¥§€£∆©®™";
@@ -198,7 +181,7 @@
     }, 100);
   }
 
-  // --- 5. TRAVA DE TELA ---
+  // 4. TRAVA DE TELA
   function forcarTelaCheia() {
     const el = document.documentElement;
     if (el.requestFullscreen) el.requestFullscreen().catch(()=>{});
@@ -209,7 +192,6 @@
     const digitada = input.value.toUpperCase();
     if (digitada === SENHA_CORRETA) {
       pararAudio();
-      pararLoopAlerta();
       clearInterval(glitchLoop);
       
       if (document.exitFullscreen) document.exitFullscreen().catch(()=>{});
@@ -225,18 +207,17 @@
       document.body.style.background = '#000';
       
     } else {
+      // Se errar, não avisa nada, só pisca vermelho e limpa
       input.value = '';
       input.style.borderColor = '#ff0000';
       document.body.style.background = '#300';
       setTimeout(() => { input.style.borderColor = '#00ff00'; document.body.style.background = '#000'; }, 150);
-      alert("SENHA INCORRETA!");
     }
   }
 
   // Inicializa os efeitos na primeira interação
   document.body.addEventListener('click', () => {
     tocarSirene();
-    iniciarLoopAlerta();
     iniciarGlitch();
     forcarTelaCheia();
   }, { once: true });
@@ -249,8 +230,7 @@
   // Trava teclas de fuga
   document.addEventListener('keydown', (e) => {
     if (e.key === 'F11' || e.key === 'F12' || (e.ctrlKey && e.key === 'w') || (e.ctrlKey && e.key === 'W')) {
-      e.preventDefault(); // No PC isso impede de fechar ou abrir inspecionar
-      alert("Ação bloqueada.");
+      e.preventDefault(); 
     }
   });
 
