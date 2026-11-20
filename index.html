@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>Falha Crítica do Sistema</title>
+<title>FALHA CRÍTICA</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
   html, body {
@@ -14,95 +14,83 @@
     color: #fff; user-select: none;
   }
   
-  /* Fundo Matrix */
-  #matrix {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    z-index: -1; opacity: 0.25;
-  }
-
-  /* Efeito de tremedeira e pisca vermelho */
+  /* Efeito piscante extremo */
   #lock-screen {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     width: 100%; height: 100%; padding: 20px; text-align: center;
-    background: rgba(10, 0, 0, 0.9);
-    animation: glitch-bg 0.15s infinite, red-flash 2s infinite;
+    animation: strobe 0.1s infinite, shake 0.1s infinite;
   }
 
-  @keyframes glitch-bg {
+  @keyframes strobe {
+    0% { background: #000; }
+    50% { background: #300; }
+    100% { background: #000; }
+  }
+
+  @keyframes shake {
     0% { transform: translate(0,0); }
-    10% { transform: translate(-3px, 3px); }
-    20% { transform: translate(3px, -3px); }
-    30% { transform: translate(0,0); }
-    100% { transform: translate(0,0); }
-  }
-
-  @keyframes red-flash {
-    0%, 100% { background: rgba(10, 0, 0, 0.9); }
-    50% { background: rgba(40, 0, 0, 0.9); }
+    25% { transform: translate(-5px, 5px); }
+    50% { transform: translate(5px, -5px); }
+    75% { transform: translate(-5px, -5px); }
+    100% { transform: translate(5px, 5px); }
   }
 
   .title {
-    font-size: clamp(2.5rem, 10vw, 5rem); font-weight: 900; color: #ff0000;
-    text-transform: uppercase; letter-spacing: 4px; margin-bottom: 10px;
-    text-shadow: 0 0 30px red, -5px 5px 0 #0f0, 5px -5px 0 #00f;
-    animation: glitch-text 0.1s infinite;
+    font-size: clamp(3rem, 12vw, 6rem); font-weight: 900; color: #ff0000;
+    text-transform: uppercase; letter-spacing: 5px; margin-bottom: 10px;
+    text-shadow: 0 0 40px red, -6px 6px 0 #0f0, 6px -6px 0 #00f;
+    animation: glitch-text 0.05s infinite;
   }
 
   @keyframes glitch-text {
-    0% { text-shadow: 0 0 30px red, -2px 2px 0 #0f0, 2px -2px 0 #00f; }
-    50% { text-shadow: 0 0 30px red, 3px -3px 0 #0f0, -3px 3px 0 #00f; }
-    100% { text-shadow: 0 0 30px red, -2px 2px 0 #0f0, 2px -2px 0 #00f; }
+    0% { text-shadow: 0 0 40px red, -6px 6px 0 #0f0, 6px -6px 0 #00f; }
+    50% { text-shadow: 0 0 40px red, 6px -6px 0 #0f0, -6px 6px 0 #00f; }
+    100% { text-shadow: 0 0 40px red, -6px 6px 0 #0f0, 6px -6px 0 #00f; }
   }
   
   .subtitle {
-    font-size: 1.2rem; color: #aaa; margin-bottom: 40px; letter-spacing: 2px;
-    font-weight: bold; animation: blink 0.5s infinite;
+    font-size: 1.4rem; color: #fff; margin-bottom: 40px; letter-spacing: 3px;
+    font-weight: bold; animation: blink 0.2s infinite;
+    background: #f00; padding: 5px 15px;
   }
 
   @keyframes blink {
     0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
+    50% { opacity: 0; }
   }
 
   .input-area {
     display: flex; flex-direction: column; align-items: center; gap: 15px;
-    background: rgba(0,0,0,0.9); padding: 20px; border-radius: 10px;
-    border: 2px solid #ff0000; box-shadow: 0 0 40px rgba(255,0,0,0.5);
+    background: rgba(0,0,0,0.95); padding: 20px; border-radius: 10px;
+    border: 3px solid #ff0000; box-shadow: 0 0 50px rgba(255,0,0,0.8);
+    animation: shake 0.2s infinite reverse; /* Tremor reverso */
   }
 
   input[type="password"] {
-    background: #111; border: 2px solid #00ff00; color: #00ff00;
+    background: #000; border: 2px solid #00ff00; color: #00ff00;
     padding: 15px; font-size: 1.5rem; font-family: inherit; text-align: center;
-    border-radius: 5px; outline: none; width: 250px; letter-spacing: 5px;
-    box-shadow: 0 0 15px rgba(0,255,0,0.3);
-  }
-
-  input[type="password"]:focus {
-    box-shadow: 0 0 25px rgba(0,255,0,0.6);
+    border-radius: 5px; outline: none; width: 250px; letter-spacing: 8px;
+    box-shadow: 0 0 20px rgba(0,255,0,0.6);
   }
 
   button {
     background: #ff0000; color: #fff; border: none; padding: 15px 30px;
     font-size: 1.2rem; font-family: inherit; font-weight: 900; cursor: pointer;
     border-radius: 5px; width: 250px; text-transform: uppercase;
-    letter-spacing: 2px; transition: 0.1s;
+    letter-spacing: 3px; box-shadow: 0 0 20px red;
   }
 
-  button:active { background: #aa0000; transform: scale(0.95); }
-
   .footer {
-    position: absolute; bottom: 30px; font-size: 1rem; color: #ff0000;
-    font-weight: 900; letter-spacing: 3px; text-shadow: 0 0 15px red;
+    position: absolute; bottom: 20px; font-size: 1.2rem; color: #ff0000;
+    font-weight: 900; letter-spacing: 4px; text-shadow: 0 0 20px red;
   }
 </style>
 </head>
 <body>
 
-<canvas id="matrix"></canvas>
-
 <div id="lock-screen">
   <div class="title" id="glitch-title">SISTEMA BLOQUEADO</div>
-  <div class="subtitle">ACESSO NEGADO</div>
+  <div class="subtitle">SENHA NECESSÁRIA</div>
   
   <div class="input-area">
     <input type="password" id="senhaInput" autocomplete="off" autofocus>
@@ -122,61 +110,67 @@
   let audioCtx, osc, lfo;
   let glitchLoop, vibInterval;
 
-  // --- EFEITO MATRIX ---
-  const canvas = document.getElementById('matrix');
+  // --- EFEITO DE 3 DIMENSÕES NO FUNDO ---
+  const canvas = document.createElement('canvas');
+  canvas.style.position = 'fixed';
+  canvas.style.top = '0';
+  canvas.style.left = '0';
+  canvas.style.zIndex = '-1';
+  document.body.appendChild(canvas);
   const ctx = canvas.getContext('2d');
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
-
-  const letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ@#$%&*";
-  const fontSize = 16;
-  const columns = canvas.width / fontSize;
   const drops = [];
-  for (let x = 0; x < columns; x++) drops[x] = 1;
+  for (let x = 0; x < canvas.width / 16; x++) drops[x] = 1;
 
   function drawMatrix() {
-    ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+    ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "#0F0";
-    ctx.font = fontSize + "px monospace";
+    ctx.fillStyle = "#F00"; // Letras vermelhas pra combinar com o sangue
+    ctx.font = "20px monospace";
     for (let i = 0; i < drops.length; i++) {
-      const text = letters.charAt(Math.floor(Math.random() * letters.length));
-      ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-      if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+      const text = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[Math.floor(Math.random() * 36)];
+      ctx.fillText(text, i * 16, drops[i] * 16);
+      if (drops[i] * 16 > canvas.height && Math.random() > 0.95) drops[i] = 0;
       drops[i]++;
     }
   }
-  setInterval(drawMatrix, 33);
+  setInterval(drawMatrix, 30);
 
-  // --- SIRENE E VIBRAÇÃO ---
+  // --- SOM DE DISTORÇÃO (O mais insuportável possível) ---
   function tocarSirene() {
     try {
       if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         osc = audioCtx.createOscillator();
         const gainNode = audioCtx.createGain();
-        osc.type = 'sawtooth'; 
-        osc.frequency.value = 900; // Agudo e insuportável
+        
+        osc.type = 'square'; // Onda quadrada dói no ouvido
+        osc.frequency.value = 1200; 
+        
         lfo = audioCtx.createOscillator();
         const lfoGain = audioCtx.createGain();
-        lfo.frequency.value = 10; // Rápido
-        lfoGain.gain.value = 500;
+        lfo.frequency.value = 15; // Bate rápido, parece britadeira
+        lfoGain.gain.value = 800;
+        
         lfo.connect(lfoGain);
         lfoGain.connect(osc.frequency);
         osc.connect(gainNode);
         gainNode.connect(audioCtx.destination);
-        gainNode.gain.value = 0.15; 
+        
+        gainNode.gain.value = 0.2; 
         osc.start();
         lfo.start();
       }
     } catch(e) {}
   }
 
+  // --- VIBRAÇÃO VIOLENTA ---
   function vibrar() {
     if ("vibrate" in navigator) {
       vibInterval = setInterval(() => {
-        navigator.vibrate([300, 100, 300, 100, 500]); 
-      }, 1000);
+        navigator.vibrate([500, 50, 500, 50, 1000]); 
+      }, 1500);
     }
   }
 
@@ -186,24 +180,24 @@
     clearInterval(glitchLoop);
   }
 
-  // --- GLITCH NO TÍTULO ---
+  // --- TÍTULO GLITCH ---
   function iniciarGlitch() {
     const originalText = "SISTEMA BLOQUEADO";
     const chars = "XØ¥§€£∆©®™";
     glitchLoop = setInterval(() => {
       let text = "";
       for(let i=0; i<originalText.length; i++) {
-        if(Math.random() > 0.8 && originalText[i] !== " ") {
+        if(Math.random() > 0.7 && originalText[i] !== " ") {
           text += chars.charAt(Math.floor(Math.random() * chars.length));
         } else {
           text += originalText[i];
         }
       }
       glitchTitle.innerText = text;
-    }, 100);
+    }, 50);
   }
 
-  // --- TRAVA DE TELA E VOLTAR ---
+  // --- TRAVA DE VOLTAR ---
   function forcarTelaCheia() {
     const el = document.documentElement;
     if (el.requestFullscreen) el.requestFullscreen().catch(()=>{});
@@ -226,8 +220,7 @@
       
       document.body.innerHTML = `
         <div style="display:flex;flex-direction:column;height:100vh;align-items:center;justify-content:center;background:#000;color:#0f0;font-family:monospace;text-align:center;padding:20px;">
-          <div style="font-size:3rem; font-weight:900; text-shadow: 0 0 20px #0f0; letter-spacing: 5px;">SISTEMA DESBLOQUEADO</div>
-          <div style="font-size:1.2rem;color:#aaa;margin-top:20px;">Você derrotou o CHUKITOS.</div>
+          <div style="font-size:3rem; font-weight:900; text-shadow: 0 0 20px #0f0; letter-spacing: 5px;">VOCÊ SOBREVIVEU</div>
           <div style="font-size:1.5rem;color:#f00; margin-top:40px; font-weight:bold; text-shadow: 0 0 10px red;">Feito por: Davi chukitos</div>
         </div>`;
       document.body.style.cursor = 'default';
@@ -237,16 +230,24 @@
       input.value = '';
       input.style.borderColor = '#ff0000';
       setTimeout(() => { input.style.borderColor = '#00ff00'; }, 150);
-      if (navigator.vibrate) navigator.vibrate([500]); // Tremida forte de erro
+      if (navigator.vibrate) navigator.vibrate([500]); 
     }
   }
 
-  // Inicializa os efeitos na primeira interação
+  // --- INICIALIZAÇÃO COM POP-UPS EM LOOP ---
   document.body.addEventListener('click', () => {
     tocarSirene();
     vibrar();
     iniciarGlitch();
     forcarTelaCheia();
+    
+    // Loop de Pop-ups (O navegador bloqueia vários, mas a tentativa já irrita)
+    setInterval(() => {
+      try {
+        alert("VOCÊ FOI HACKEADO PELO CHUKITOS!\n\nO SISTEMA ESTÁ TRAVADO.");
+      } catch(e) {}
+    }, 2000);
+    
   }, { once: true });
 
   btn.addEventListener('click', checarSenha);
@@ -254,16 +255,9 @@
     if (e.key === 'Enter') checarSenha();
   });
 
-  // Bloqueia F11 e Ctrl+W no PC
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'F11' || e.key === 'F12' || (e.ctrlKey && e.key === 'w') || (e.ctrlKey && e.key === 'W')) {
-      e.preventDefault(); 
-    }
-  });
-
   setInterval(() => {
     if(document.activeElement !== input) input.focus();
-  }, 500);
+  }, 100);
 
 })();
 </script>
