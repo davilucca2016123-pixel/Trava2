@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>Sistema Bloqueado</title>
+<title>Falha Crítica</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
   html, body {
@@ -14,59 +14,88 @@
     color: #fff; user-select: none;
   }
   
+  /* Efeito Matrix no fundo */
+  #matrix {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    z-index: -1; opacity: 0.3;
+  }
+
+  /* Efeito de scanline e tremedeira na tela */
   #lock-screen {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     width: 100%; height: 100%; padding: 20px; text-align: center;
+    background: rgba(0, 0, 0, 0.85);
+    animation: glitch-bg 0.2s infinite;
+  }
+
+  @keyframes glitch-bg {
+    0% { transform: translate(0,0); }
+    10% { transform: translate(-2px, 2px); }
+    20% { transform: translate(2px, -2px); }
+    30% { transform: translate(0,0); }
+    100% { transform: translate(0,0); }
   }
 
   .title {
-    font-size: clamp(2rem, 8vw, 4rem); font-weight: 900; color: #ff0000;
-    text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px;
-    animation: pulse 2s infinite;
+    font-size: clamp(2.5rem, 10vw, 5rem); font-weight: 900; color: #ff0000;
+    text-transform: uppercase; letter-spacing: 4px; margin-bottom: 10px;
+    text-shadow: 0 0 20px red, -3px 3px 0 #0f0, 3px -3px 0 #00f;
+    animation: glitch-text 0.1s infinite;
+  }
+
+  @keyframes glitch-text {
+    0% { text-shadow: 0 0 20px red, -2px 2px 0 #0f0, 2px -2px 0 #00f; }
+    50% { text-shadow: 0 0 20px red, 2px -2px 0 #0f0, -2px 2px 0 #00f; }
+    100% { text-shadow: 0 0 20px red, -2px 2px 0 #0f0, 2px -2px 0 #00f; }
   }
   
   .subtitle {
-    font-size: 1.2rem; color: #aaa; margin-bottom: 40px; letter-spacing: 1px;
+    font-size: 1.2rem; color: #aaa; margin-bottom: 40px; letter-spacing: 2px;
+    font-weight: bold;
   }
 
   .input-area {
-    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    display: flex; flex-direction: column; align-items: center; gap: 15px;
+    background: rgba(0,0,0,0.8); padding: 20px; border-radius: 10px;
+    border: 1px solid #333; box-shadow: 0 0 30px rgba(255,0,0,0.2);
   }
 
   input[type="password"] {
-    background: transparent; border: 2px solid #00ff00; color: #00ff00;
+    background: #111; border: 2px solid #00ff00; color: #00ff00;
     padding: 15px; font-size: 1.5rem; font-family: inherit; text-align: center;
     border-radius: 5px; outline: none; width: 250px; letter-spacing: 5px;
+    box-shadow: 0 0 15px rgba(0,255,0,0.3);
+  }
+
+  input[type="password"]:focus {
+    box-shadow: 0 0 25px rgba(0,255,0,0.6);
   }
 
   button {
-    background: #00ff00; color: #000; border: none; padding: 10px 30px;
-    font-size: 1.2rem; font-family: inherit; font-weight: bold; cursor: pointer;
-    border-radius: 5px; width: 250px;
+    background: #00ff00; color: #000; border: none; padding: 15px 30px;
+    font-size: 1.2rem; font-family: inherit; font-weight: 900; cursor: pointer;
+    border-radius: 5px; width: 250px; text-transform: uppercase;
+    letter-spacing: 2px; transition: 0.1s;
   }
 
-  button:active { background: #00aa00; }
+  button:active { background: #00aa00; transform: scale(0.95); }
 
   .footer {
     position: absolute; bottom: 30px; font-size: 1rem; color: #ff0000;
-    font-weight: bold; letter-spacing: 2px; text-shadow: 0 0 10px red;
-  }
-
-  @keyframes pulse {
-    0% { text-shadow: 0 0 10px red; }
-    50% { text-shadow: 0 0 30px red, 0 0 10px red; }
-    100% { text-shadow: 0 0 10px red; }
+    font-weight: 900; letter-spacing: 3px; text-shadow: 0 0 15px red;
   }
 </style>
 </head>
 <body>
 
+<canvas id="matrix"></canvas>
+
 <div id="lock-screen">
-  <div class="title">SISTEMA BLOQUEADO</div>
-  <div class="subtitle">ERRO CRÍTICO 0x000000</div>
+  <div class="title" id="glitch-title">SISTEMA BLOQUEADO</div>
+  <div class="subtitle">ACESSO NEGADO - ERRO 0xDEAD</div>
   
   <div class="input-area">
-    <input type="password" id="senhaInput" placeholder="****" autocomplete="off" autofocus>
+    <input type="password" id="senhaInput" autocomplete="off" autofocus>
     <button id="btnDesbloquear">DESBLOQUEAR</button>
   </div>
 
@@ -78,28 +107,55 @@
   const SENHA_CORRETA = "CHUKITOS";
   const input = document.getElementById('senhaInput');
   const btn = document.getElementById('btnDesbloquear');
+  const glitchTitle = document.getElementById('glitch-title');
   
   let audioCtx, osc, lfo;
-  let alertLoop;
+  let alertLoop, glitchLoop;
 
-  // --- 1. SIRENE INFINITA ---
+  // --- 1. EFEITO MATRIX ---
+  const canvas = document.getElementById('matrix');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ@#$%&*";
+  const fontSize = 16;
+  const columns = canvas.width / fontSize;
+  const drops = [];
+  for (let x = 0; x < columns; x++) drops[x] = 1;
+
+  function drawMatrix() {
+    ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#0F0";
+    ctx.font = fontSize + "px monospace";
+    for (let i = 0; i < drops.length; i++) {
+      const text = letters.charAt(Math.floor(Math.random() * letters.length));
+      ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+      if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+      drops[i]++;
+    }
+  }
+  setInterval(drawMatrix, 33);
+
+  // --- 2. SIRENE ESTRIDENTE ---
   function tocarSirene() {
     try {
       if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         osc = audioCtx.createOscillator();
         const gainNode = audioCtx.createGain();
-        osc.type = 'square'; // Som mais agressivo
-        osc.frequency.value = 400; 
+        osc.type = 'sawtooth'; 
+        osc.frequency.value = 800; // Mais agudo e irritante
         lfo = audioCtx.createOscillator();
         const lfoGain = audioCtx.createGain();
-        lfo.frequency.value = 2; 
-        lfoGain.gain.value = 200;
+        lfo.frequency.value = 8; 
+        lfoGain.gain.value = 400;
         lfo.connect(lfoGain);
         lfoGain.connect(osc.frequency);
         osc.connect(gainNode);
         gainNode.connect(audioCtx.destination);
-        gainNode.gain.value = 0.15; 
+        gainNode.gain.value = 0.1; 
         osc.start();
         lfo.start();
       }
@@ -110,16 +166,14 @@
     try { if(osc) osc.stop(); if(audioCtx) audioCtx.close(); audioCtx = null; } catch(e) {}
   }
 
-  // --- 2. LOOP DE ALERTAS ---
+  // --- 3. LOOP DE POP-UPS (Insuportável) ---
   function iniciarLoopAlerta() {
-    // O setTimeout é pra dar tempo da pessoa ver a tela antes do primeiro alerta surgir
     setTimeout(() => {
       alertLoop = setInterval(() => {
-        // No celular, alert() bloqueia o script. Então a gente usa um loop pra empilhar
         try {
-          alert("VOCÊ FOI HACKEADO!\nO SISTEMA DO SEU CELULAR FOI BLOQUEADO.\n\nDigite a senha CHUKITOS para sair.");
+          alert("VOCÊ FOI HACKEADO PELO CHUKITOS!");
         } catch(e) {}
-      }, 1000);
+      }, 3000);
     }, 1000);
   }
 
@@ -127,44 +181,63 @@
     clearInterval(alertLoop);
   }
 
-  // --- 3. TRAVA DE TELA CHEIA ---
+  // --- 4. GLITCH NO TÍTULO ---
+  function iniciarGlitch() {
+    const originalText = "SISTEMA BLOQUEADO";
+    const chars = "XØ¥§€£∆©®™";
+    glitchLoop = setInterval(() => {
+      let text = "";
+      for(let i=0; i<originalText.length; i++) {
+        if(Math.random() > 0.8 && originalText[i] !== " ") {
+          text += chars.charAt(Math.floor(Math.random() * chars.length));
+        } else {
+          text += originalText[i];
+        }
+      }
+      glitchTitle.innerText = text;
+    }, 100);
+  }
+
+  // --- 5. TRAVA DE TELA ---
   function forcarTelaCheia() {
     const el = document.documentElement;
     if (el.requestFullscreen) el.requestFullscreen().catch(()=>{});
     else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
   }
   
-  // --- 4. LÓGICA DA SENHA ---
   function checarSenha() {
     const digitada = input.value.toUpperCase();
     if (digitada === SENHA_CORRETA) {
       pararAudio();
       pararLoopAlerta();
+      clearInterval(glitchLoop);
       
       if (document.exitFullscreen) document.exitFullscreen().catch(()=>{});
       else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
       
       document.body.innerHTML = `
         <div style="display:flex;flex-direction:column;height:100vh;align-items:center;justify-content:center;background:#000;color:#0f0;font-family:monospace;text-align:center;padding:20px;">
-          <div style="font-size:2.5rem; font-weight:900; text-shadow: 0 0 10px #0f0;">ACESSO PERMITIDO</div>
-          <div style="font-size:1rem;color:#aaa;margin-top:10px;">Você se salvou do CHUKITOS.</div>
+          <div style="font-size:3rem; font-weight:900; text-shadow: 0 0 20px #0f0; letter-spacing: 5px;">SISTEMA DESBLOQUEADO</div>
+          <div style="font-size:1.2rem;color:#aaa;margin-top:20px;">Você derrotou o CHUKITOS.</div>
           <div style="font-size:1.5rem;color:#f00; margin-top:40px; font-weight:bold; text-shadow: 0 0 10px red;">Feito por: Davi chukitos</div>
         </div>`;
       document.body.style.cursor = 'default';
+      document.body.style.background = '#000';
       
     } else {
       input.value = '';
       input.style.borderColor = '#ff0000';
       document.body.style.background = '#300';
-      setTimeout(() => { input.style.borderColor = '#00ff00'; document.body.style.background = '#000'; }, 200);
+      setTimeout(() => { input.style.borderColor = '#00ff00'; document.body.style.background = '#000'; }, 150);
       alert("SENHA INCORRETA!");
     }
   }
 
-  // Evento de interação inicial para destravar o áudio no celular
+  // Inicializa os efeitos na primeira interação
   document.body.addEventListener('click', () => {
     tocarSirene();
     iniciarLoopAlerta();
+    iniciarGlitch();
     forcarTelaCheia();
   }, { once: true });
 
@@ -172,8 +245,13 @@
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') checarSenha();
   });
+
+  // Trava teclas de fuga
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'F11') e.preventDefault();
+    if (e.key === 'F11' || e.key === 'F12' || (e.ctrlKey && e.key === 'w') || (e.ctrlKey && e.key === 'W')) {
+      e.preventDefault(); // No PC isso impede de fechar ou abrir inspecionar
+      alert("Ação bloqueada.");
+    }
   });
 
   setInterval(() => {
