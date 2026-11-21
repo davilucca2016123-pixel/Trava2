@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#000000">
+<meta name="robots" content="noindex,nofollow">
 <title>SISTEMA DESTRUÍDO</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -29,7 +30,7 @@
   .title{
     font-size:clamp(2.6rem,15vw,8rem);font-weight:900;
     text-transform:uppercase;letter-spacing:4px;margin-bottom:10px;
-    text-shadow:0 0 18px #f00,0 0 40px #f00;will-change:transform,filter;
+    text-shadow:0 0 18px #f00,0 0 40px #f00;will-change:transform;
   }
   .subtitle{
     font-size:clamp(1rem,4.5vw,1.6rem);margin-bottom:36px;letter-spacing:3px;
@@ -59,34 +60,48 @@
     background:#000;padding:4px 8px;text-shadow:0 0 8px #0f0;
   }
   #start-hint{
-    position:fixed;inset:0;z-index:5;background:#000;
-    display:flex;align-items:center;justify-content:center;
+    position:fixed;inset:0;z-index:9998;background:#000;
+    display:flex;align-items:center;justify-content:center;flex-direction:column;gap:20px;
     color:#f00;font-size:clamp(1.2rem,6vw,2.2rem);font-weight:900;
     text-align:center;padding:24px;cursor:pointer;letter-spacing:3px;
     animation:pulse 0.9s infinite alternate;
   }
   @keyframes pulse{from{opacity:.35;}to{opacity:1;}}
 
-  /* Overlay de susto — não bloqueável como alert() */
   #scare-overlay{
     position:fixed;inset:0;z-index:9999;background:#000;
     display:none;align-items:center;justify-content:center;
     color:#f00;font-family:inherit;font-weight:900;
     font-size:clamp(1.4rem,7vw,3rem);text-align:center;padding:24px;
     letter-spacing:3px;text-shadow:0 0 20px #f00;
-    animation:scareFlash 0.1s infinite alternate;
+    animation:scareFlash 0.08s infinite alternate;
   }
   @keyframes scareFlash{
     from{background:#000;color:#f00;}to{background:#f00;color:#000;}
+  }
+
+  #devtools-lock{
+    position:fixed;inset:0;z-index:10000;background:#000;
+    display:none;align-items:center;justify-content:center;flex-direction:column;
+    color:#f00;font-family:'Courier New',monospace;font-weight:900;
+    font-size:clamp(1.6rem,8vw,3.5rem);text-align:center;padding:24px;
+    letter-spacing:4px;text-shadow:0 0 30px #f00;
+    animation:scareFlash 0.1s infinite alternate;
   }
 </style>
 </head>
 <body>
 
 <canvas id="fx"></canvas>
-<div id="start-hint">TOQUE PARA INICIAR<br><span style="font-size:.6em;color:#0f0;">▶ teclado travado · fullscreen forçado · sem saída fácil</span></div>
-
+<div id="start-hint">
+  <div>TOQUE PARA INICIAR</div>
+  <div style="font-size:.5em;color:#0f0;letter-spacing:2px;">▶ áudio · voz · fullscreen · cursor travado</div>
+</div>
 <div id="scare-overlay"></div>
+<div id="devtools-lock">
+  <div>FECHE O DEVTOOLS</div>
+  <div style="font-size:.45em;margin-top:20px;color:#0f0;">para continuar</div>
+</div>
 
 <div id="lock-screen">
   <div class="title" id="glitch-title">SISTEMA DESTRUÍDO</div>
@@ -109,12 +124,14 @@
   const fx        = document.getElementById('fx');
   const startHint = document.getElementById('start-hint');
   const overlay   = document.getElementById('scare-overlay');
-  const ctx       = fx.getContext('2d');
+  const dtLock    = document.getElementById('devtools-lock');
+  const ctx       = fx.getContext('2d', { alpha: false });
 
-  let audioCtx=null, master=null, osc=null, lfo=null, lfoGain=null, noise=null, sub=null;
-  let vibInterval=null, rafId=null, focusId=null, downloadId=null, overlayId=null;
-  let started=false, t0=0, wakeLock=null;
-  const scheduled=new Set();
+  let audioCtx=null, master=null, nodes=[];
+  let wakeLock=null;
+  let started=false, t0=0;
+  let rafId=null;
+  let intervals=[];
 
   // ---------- canvas ----------
   function resize(){
@@ -128,43 +145,109 @@
   resize();
   addEventListener('resize', resize);
 
-  // ---------- AUDIO ----------
+  // ---------- AUDIO (6 camadas + pan estéreo) ----------
   function initAudio(){
     if (audioCtx) return;
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return;
     audioCtx = new AC();
     master = audioCtx.createGain();
-    master.gain.value = 0.06;
+    master.gain.value = 0.08;
     master.connect(audioCtx.destination);
 
-    osc = audioCtx.createOscillator(); osc.type='sawtooth'; osc.frequency.value=8000;
-    const oscGain = audioCtx.createGain(); oscGain.gain.value=0.5;
-    osc.connect(oscGain).connect(master); osc.start();
+    // Panners estéreo
+    const pL = audioCtx.createStereoPanner(); pL.pan.value = -0.7; pL.connect(master);
+    const pR = audioCtx.createStereoPanner(); pR.pan.value =  0.7; pR.connect(master);
+    const pM = audioCtx.createStereoPanner(); pM.pan.value =  0.0; pM.connect(master);
 
-    lfo = audioCtx.createOscillator(); lfo.type='sine'; lfo.frequency.value=6;
-    lfoGain = audioCtx.createGain(); lfoGain.gain.value=4000;
-    lfo.connect(lfoGain).connect(osc.frequency); lfo.start();
+    function addOsc(type, freq, gainVal, dest, pan){
+      const o = audioCtx.createOscillator();
+      o.type = type; o.frequency.value = freq;
+      const g = audioCtx.createGain(); g.gain.value = gainVal;
+      o.connect(g).connect(dest);
+      o.start();
+      nodes.push(o);
+      return { o, g };
+    }
 
-    const bufSize = audioCtx.sampleRate * 2;
-    const buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+    // Sub 42Hz — terremoto
+    addOsc('sine', 42, 0.6, pM);
+
+    // Saw 8kHz + LFO (4k-14k em 7Hz)
+    const saw = audioCtx.createOscillator();
+    saw.type='sawtooth'; saw.frequency.value=8000;
+    const sawG = audioCtx.createGain(); sawG.gain.value=0.35;
+    saw.connect(sawG).connect(pM); saw.start(); nodes.push(saw);
+
+    const lfo = audioCtx.createOscillator(); lfo.type='sine'; lfo.frequency.value=7;
+    const lfoG = audioCtx.createGain(); lfoG.gain.value=5000;
+    lfo.connect(lfoG).connect(saw.frequency); lfo.start(); nodes.push(lfo);
+
+    // Ultra-saw 15kHz (doloroso, quase inaudível)
+    addOsc('sawtooth', 15000, 0.12, pL);
+
+    // White noise L
+    function noiseBuffer(sr, len){
+      const buf = audioCtx.createBuffer(1, sr*len, sr);
+      const d = buf.getChannelData(0);
+      for (let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
+      return buf;
+    }
+    const wn = audioCtx.createBufferSource();
+    wn.buffer = noiseBuffer(audioCtx.sampleRate, 2); wn.loop=true;
+    const wnG = audioCtx.createGain(); wnG.gain.value=0.28;
+    wn.connect(wnG).connect(pL); wn.start(); nodes.push(wn);
+
+    // Brown noise R (mais grave, "chiado" diferente)
+    const buf = audioCtx.createBuffer(1, audioCtx.sampleRate*2, audioCtx.sampleRate);
     const d = buf.getChannelData(0);
-    for (let i=0;i<bufSize;i++) d[i] = Math.random()*2-1;
-    noise = audioCtx.createBufferSource(); noise.buffer=buf; noise.loop=true;
-    const ng = audioCtx.createGain(); ng.gain.value=0.35;
-    noise.connect(ng).connect(master); noise.start();
-
-    sub = audioCtx.createOscillator(); sub.type='sine'; sub.frequency.value=42;
-    const sg = audioCtx.createGain(); sg.gain.value=0.7;
-    sub.connect(sg).connect(master); sub.start();
+    let last = 0;
+    for (let i=0;i<d.length;i++){
+      const w = Math.random()*2-1;
+      last = (last + 0.02*w) / 1.02;
+      d[i] = last * 3.5;
+    }
+    const bn = audioCtx.createBufferSource();
+    bn.buffer = buf; bn.loop=true;
+    const bnG = audioCtx.createGain(); bnG.gain.value=0.4;
+    bn.connect(bnG).connect(pR); bn.start(); nodes.push(bn);
   }
+
   function pararAudio(){
     try{
-      if(osc) osc.stop(); if(lfo) lfo.stop();
-      if(noise) noise.stop(); if(sub) sub.stop();
-      if(audioCtx) audioCtx.close();
+      nodes.forEach(n => { try{ n.stop(); }catch(e){} });
+      if (audioCtx) audioCtx.close();
     }catch(e){}
-    audioCtx=null; osc=lfo=noise=sub=master=null;
+    nodes=[]; audioCtx=null; master=null;
+  }
+
+  // ---------- TTS ----------
+  function carregarVozes(){
+    if ('speechSynthesis' in window && speechSynthesis.getVoices().length === 0){
+      speechSynthesis.onvoiceschanged = () => {};
+    }
+  }
+  carregarVozes();
+
+  const FRASES = [
+    "VOCÊ FOI HACKEADO PELO CHUKITOS.",
+    "DESBLOQUEIE PARA SALVAR O SISTEMA.",
+    "SEUS ARQUIVOS ESTÃO SENDO ENVIADOS.",
+    "ERRO CRÍTICO DETECTADO.",
+    "A SENHA CORRETA É A SUA ÚNICA SAÍDA."
+  ];
+  let fraseIdx = 0;
+
+  function gritar(texto){
+    if (!('speechSynthesis' in window)) return;
+    try{
+      const u = new SpeechSynthesisUtterance(texto);
+      u.lang = 'pt-BR';
+      u.volume = 1;
+      u.rate = 0.85;
+      u.pitch = 0.3;
+      speechSynthesis.speak(u);
+    }catch(e){}
   }
 
   // ---------- WAKE LOCK ----------
@@ -183,16 +266,47 @@
   // ---------- VIBRAÇÃO ----------
   function iniciarVibracao(){
     if (!('vibrate' in navigator)) return;
-    const p = [1200,80,1200,80,1200,400];
+    const p = [1400,60,1400,60,1400,500];
     navigator.vibrate(p);
-    vibInterval = setInterval(() => navigator.vibrate(p), 2600);
+    intervals.push(setInterval(() => navigator.vibrate(p), 2400));
   }
   function pararVibracao(){
-    if ('vibrate' in navigator){ clearInterval(vibInterval); navigator.vibrate(0); }
+    if ('vibrate' in navigator) navigator.vibrate(0);
+  }
+
+  // ---------- FULLSCREEN ----------
+  function forcarFullscreen(){
+    const el = document.documentElement;
+    const r = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+    if (r){ try{ r.call(el).catch(()=>{}); }catch(e){} }
+  }
+  function sairFullscreen(){
+    try{
+      if (document.exitFullscreen) document.exitFullscreen().catch(()=>{});
+      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+    }catch(e){}
+  }
+
+  // ---------- POINTER LOCK ----------
+  function travarCursor(){
+    if (!document.body.requestPointerLock) return;
+    try{ document.body.requestPointerLock(); }catch(e){}
+  }
+  function liberarCursor(){
+    try{ if (document.pointerLockElement) document.exitPointerLock(); }catch(e){}
+  }
+
+  // ---------- ORIENTATION LOCK ----------
+  function travarOrientacao(){
+    try{
+      if (screen.orientation && screen.orientation.lock){
+        screen.orientation.lock('portrait').catch(()=>{});
+      }
+    }catch(e){}
   }
 
   // ---------- FX ----------
-  const CHARS = "XØ¥§€£∆©®™#%&*";
+  const CHARS = "XØ¥§€£∆©®™#%&*█▓▒░";
   const TITLE = "SISTEMA DESTRUÍDO";
   let glitchTitle = TITLE, nextTitleAt = 0;
 
@@ -201,22 +315,54 @@
     const W = innerWidth, H = innerHeight;
     const t = (now - t0) / 1000;
 
+    // Pass 1: flash
     const hue = (t * 340) % 360;
-    ctx.fillStyle = `hsl(${hue},100%,${Math.sin(t*24)>0?8:60}%)`;
+    const flash = Math.sin(t*22) > 0;
+    ctx.fillStyle = flash ? `hsl(${hue},100%,62%)` : `hsl(${hue},100%,4%)`;
     ctx.fillRect(0,0,W,H);
 
+    // Pass 2: scanlines
     ctx.fillStyle = 'rgba(0,0,0,0.55)';
-    for (let y=(t*260|0)%4; y<H; y+=4) ctx.fillRect(0,y,W,2);
+    for (let y=(t*300|0)%3; y<H; y+=3) ctx.fillRect(0,y,W,1);
 
-    for (let i=0;i<10;i++){
-      const bw=60+Math.random()*260, bh=4+Math.random()*26;
+    // Pass 3: RGB split blocks
+    for (let i=0;i<14;i++){
+      const bw=40+Math.random()*320, bh=2+Math.random()*34;
       const bx=Math.random()*(W-bw), by=Math.random()*(H-bh);
       ctx.globalCompositeOperation='lighter';
-      ctx.fillStyle = i%2 ? 'rgba(255,0,0,.55)' : 'rgba(0,255,255,.55)';
-      ctx.fillRect(bx+(Math.random()*20-10), by, bw, bh);
+      ctx.fillStyle = i%2 ? 'rgba(255,0,0,.5)' : 'rgba(0,255,255,.5)';
+      ctx.fillRect(bx+(Math.random()*24-12), by, bw, bh);
       ctx.globalCompositeOperation='source-over';
     }
 
+    // Pass 4: glitch chars
+    ctx.font = '14px monospace';
+    for (let i=0;i<24;i++){
+      ctx.fillStyle = `hsl(${(t*120+i*15)%360},100%,50%)`;
+      ctx.fillText(
+        CHARS.charAt((Math.random()*CHARS.length)|0),
+        Math.random()*W, Math.random()*H
+      );
+    }
+
+    // Pass 5: anel pulsante
+    const r = 60 + Math.sin(t*6) * 30 + (t*30 % 400);
+    ctx.strokeStyle = `hsla(0,100%,50%,${Math.max(0,1 - r/500)})`;
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.arc(W/2, H/2, r, 0, Math.PI*2);
+    ctx.stroke();
+
+    // Pass 6: corrupção de pixel aleatória
+    if (Math.random() < 0.4){
+      const n = 20 + (Math.random()*40|0);
+      for (let i=0;i<n;i++){
+        ctx.fillStyle = Math.random()<0.5 ? '#000' : '#fff';
+        ctx.fillRect(Math.random()*W, Math.random()*H, 2 + Math.random()*6, 1 + Math.random()*3);
+      }
+    }
+
+    // Título glitch
     if (now >= nextTitleAt){
       let s="";
       for (let i=0;i<TITLE.length;i++){
@@ -230,56 +376,76 @@
     rafId = requestAnimationFrame(drawFx);
   }
 
-  // ---------- FULLSCREEN ----------
-  function forcarFullscreen(){
-    const el = document.documentElement;
-    const r = el.requestFullscreen || el.webkitRequestFullscreen;
-    if (r) r.call(el).catch(()=>{});
-  }
-  function sairFullscreen(){
-    if (document.exitFullscreen) document.exitFullscreen().catch(()=>{});
-    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-  }
-
   // ---------- TRAVAS DE SAÍDA ----------
   history.pushState(null, null, location.href);
-  window.addEventListener('popstate', () => history.pushState(null, null, location.href));
+  window.addEventListener('popstate',  () => history.pushState(null, null, location.href));
   window.addEventListener('hashchange', () => history.pushState(null, null, location.href));
-  window.addEventListener('beforeunload', (e) => { e.preventDefault(); e.returnValue = ''; });
+  window.addEventListener('beforeunload', (e) => { e.preventDefault(); e.returnValue=''; });
+  window.addEventListener('unload', () => { /* nada */ });
 
-  // Resiste a teclado desktop: refresh, fechar, fullscreen toggle, escape
+  // bfcache kill — se voltar pelo histórico, recarrega
+  window.addEventListener('pageshow', (e) => {
+    if (e.persisted){ location.reload(); }
+  });
+  window.addEventListener('pagehide', (e) => {
+    e.preventDefault();
+  });
+
+  // Keyboard trap total
   window.addEventListener('keydown', (e) => {
     if (!started) return;
     const k = e.key;
     const ctrl = e.ctrlKey || e.metaKey;
-    // Bloqueia refresh, close, view-source, etc
-    if ((ctrl && ['r','w','t','n','u','s','p'].includes(k.toLowerCase())) ||
-        k === 'F5' || k === 'F11' || k === 'Escape' ||
-        (e.altKey && k === 'F4')) {
+    const blocked =
+      k === 'F5' || k === 'F11' || k === 'F12' || k === 'Escape' ||
+      (ctrl && !e.shiftKey && !e.altKey && ['r','w','t','n','u','s','p','l','k','f'].includes(k.toLowerCase())) ||
+      (ctrl && e.shiftKey && ['i','j','c','k','m','n','r','t'].includes(k.toLowerCase())) ||
+      (e.altKey && (k === 'F4' || k === 'ArrowLeft' || k === 'ArrowRight'));
+    if (blocked){
       e.preventDefault();
       e.stopPropagation();
       if (navigator.vibrate) navigator.vibrate([200]);
+      if (k === 'Escape') setTimeout(forcarFullscreen, 30);
+    }
+    // Tab trap no input
+    if (k === 'Tab'){
+      e.preventDefault();
+      input.focus();
     }
   }, true);
 
-  // Resiste a fullscreen exit pelo Esc (repete pedido)
+  // Fullscreen change — re-request imediato
   document.addEventListener('fullscreenchange', () => {
-    if (started && !document.fullscreenElement) setTimeout(forcarFullscreen, 50);
+    if (started && !document.fullscreenElement) setTimeout(forcarFullscreen, 30);
   });
 
-  // Se a aba esconder (troca de app, minimizar), volta a tela cheia e re-foca
+  // Pointer lock change — re-request
+  document.addEventListener('pointerlockchange', () => {
+    if (started && !document.pointerLockElement) setTimeout(travarCursor, 200);
+  });
+
+  // Visibility — reentra em tudo
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden && started){
-      setTimeout(forcarFullscreen, 60);
+      setTimeout(forcarFullscreen, 50);
+      setTimeout(travarCursor, 100);
       try{ input.focus(); }catch(e){}
       travarTela();
     }
   });
 
-  // Bloqueia menu de contexto, seleção, arrasto, copiar, cut
-  ['contextmenu','selectstart','dragstart','copy','cut'].forEach(ev =>
-    document.addEventListener(ev, e => { if (started) e.preventDefault(); }, true)
-  );
+  // Bloqueio de gestos
+  ['contextmenu','selectstart','dragstart','copy','cut','paste','beforeinput'].forEach(ev => {
+    document.addEventListener(ev, e => {
+      if (started && ev !== 'beforeinput') e.preventDefault();
+    }, true);
+  });
+  window.addEventListener('beforeprint', e => { if (started) e.preventDefault(); });
+  try{
+    matchMedia('print').addEventListener('change', e => {
+      if (started && e.matches) e.preventDefault?.();
+    });
+  }catch(e){}
 
   // ---------- SUSTOS ----------
   function sustoDownload(nome, conteudo){
@@ -293,52 +459,88 @@
     }catch(e){}
   }
 
-  function agendar(seg, fn){
-    if (scheduled.has(seg)) return;
-    scheduled.add(seg);
-    setTimeout(fn, seg*1000);
-  }
-
-  const SUSTOS_TEXTO = [
+  const OVERLAY_TXT = [
     "VOCÊ FOI HACKEADO PELO CHUKITOS!",
     "ERRO CRÍTICO: SISTEMA CORROMPIDO",
     "SEUS ARQUIVOS ESTÃO SENDO ENVIADOS…",
     "SENHA '123456' NÃO É SEGURA",
     "DESBLOQUEIE PARA PARAR — DAVI CHUKITOS"
   ];
-  let scareIdx = 0;
+  let overlayIdx = 0;
 
   function mostrarSusto(){
-    overlay.textContent = SUSTOS_TEXTO[scareIdx % SUSTOS_TEXTO.length];
-    scareIdx++;
+    overlay.textContent = OVERLAY_TXT[overlayIdx % OVERLAY_TXT.length];
+    overlayIdx++;
     overlay.style.display = 'flex';
-    setTimeout(() => { overlay.style.display = 'none'; }, 700);
+    setTimeout(() => { overlay.style.display = 'none'; }, 500);
   }
 
+  const DOWNLOADS = [
+    ["VOCE_FOI_HACKEADO.txt", "HACKED BY CHUKITOS\n\nSua senha estava fraca."],
+    ["leia_isso_urgente.txt", "Isso é só um susto :)\n\n— Davi chukitos"],
+    ["erro_critico.log",      "[CRITICAL] System breached by CHUKITOS\n[INFO] Goodbye."]
+  ];
+  let dlIdx = 0;
+
   function rodarSustos(){
-    agendar(0,  () => { initAudio(); iniciarVibracao(); travarTela(); });
-    agendar(2,  () => sustoDownload("VOCE_FOI_HACKEADO.txt",
-                       "HACKED BY CHUKITOS\n\nSua senha estava fraca.\nNão use '123456' na próxima."));
-    agendar(6,  () => sustoDownload("leia_isso_urgente.txt",
-                       "Isso é só um susto :)\n\n— Davi chukitos"));
-    agendar(20, () => {
+    // Audio + vibração + tela acordada imediato
+    initAudio();
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    iniciarVibracao();
+    travarTela();
+    travarOrientacao();
+
+    // TTS a cada 3.2s
+    intervals.push(setInterval(() => {
+      gritar(FRASES[fraseIdx % FRASES.length]);
+      fraseIdx++;
+    }, 3200));
+    // Primeira fala logo
+    setTimeout(() => gritar(FRASES[0]), 400);
+
+    // Overlay a cada 1.5s
+    intervals.push(setInterval(mostrarSusto, 1500));
+
+    // Downloads em cascata a cada 5s
+    intervals.push(setInterval(() => {
+      const [n, c] = DOWNLOADS[dlIdx % DOWNLOADS.length];
+      dlIdx++;
+      sustoDownload(n, c);
+    }, 5000));
+
+    // Câmera aos 10s
+    setTimeout(() => {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
       navigator.mediaDevices.getUserMedia({ video:true, audio:false })
-        .then(stream => setTimeout(() => stream.getTracks().forEach(t=>t.stop()), 2000))
+        .then(stream => setTimeout(() => stream.getTracks().forEach(t=>t.stop()), 3000))
         .catch(()=>{});
-    });
+    }, 10000);
 
-    // Overlay a cada 2.5s + download a cada 7s, contínuo
-    overlayId  = setInterval(mostrarSusto, 2500);
-    downloadId = setInterval(() => sustoDownload("VOCE_FOI_HACKEADO.txt",
-                       "HACKED BY CHUKITOS\n\nAinda aqui?"), 7000);
-
-    // Re-foco contínuo no input
-    focusId = setInterval(() => {
+    // Focus trap
+    intervals.push(setInterval(() => {
       if (started && document.activeElement !== input){
         try{ input.focus(); }catch(e){}
       }
-    }, 200);
+    }, 150));
+
+    // Fullscreen polling 3s
+    intervals.push(setInterval(() => {
+      if (started && !document.fullscreenElement) forcarFullscreen();
+    }, 3000));
+
+    // Pointer lock polling 1s
+    intervals.push(setInterval(() => {
+      if (started && !document.pointerLockElement) travarCursor();
+    }, 1000));
+
+    // Devtools detection
+    intervals.push(setInterval(() => {
+      if (!started) return;
+      const wDiff = window.outerWidth  - window.innerWidth;
+      const hDiff = window.outerHeight - window.innerHeight;
+      const open = wDiff > 200 || hDiff > 250;
+      dtLock.style.display = open ? 'flex' : 'none';
+    }, 800));
   }
 
   // ---------- SENHA ----------
@@ -357,20 +559,23 @@
       input.value = '';
       input.style.borderColor = '#f00';
       setTimeout(() => { input.style.borderColor = '#0f0'; }, 180);
-      if (navigator.vibrate) navigator.vibrate([800]);
+      if (navigator.vibrate) navigator.vibrate([1000]);
+      gritar("SENHA INCORRETA. TENTE NOVAMENTE.");
     }
   }
 
   function pararTudo(){
     started = false;
-    if (rafId)      cancelAnimationFrame(rafId);
-    if (focusId)    clearInterval(focusId);
-    if (downloadId) clearInterval(downloadId);
-    if (overlayId)  clearInterval(overlayId);
+    if (rafId) cancelAnimationFrame(rafId);
+    intervals.forEach(id => { clearInterval(id); clearTimeout(id); });
+    intervals = [];
     overlay.style.display = 'none';
+    dtLock.style.display = 'none';
+    try{ if ('speechSynthesis' in window) speechSynthesis.cancel(); }catch(e){}
     pararAudio();
     pararVibracao();
     liberarTela();
+    liberarCursor();
     sairFullscreen();
   }
 
@@ -381,11 +586,9 @@
     startHint.remove();
 
     t0 = performance.now();
-    initAudio();
-    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-    iniciarVibracao();
     forcarFullscreen();
-    travarTela();
+    setTimeout(() => travarCursor(), 200);
+    setTimeout(() => travarOrientacao(), 300);
 
     rafId = requestAnimationFrame(drawFx);
     rodarSustos();
