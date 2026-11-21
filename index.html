@@ -3,87 +3,87 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#000000">
 <title>SISTEMA DESTRUÍDO</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-  html, body {
-    height: 100%; width: 100%; position: fixed; overflow: hidden;
-    background: #000; font-family: 'Courier New', monospace; cursor: none;
-    touch-action: none; overscroll-behavior: none; margin: 0; top: 0; left: 0;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    color: #fff; user-select: none;
+  html,body{
+    height:100%;width:100%;position:fixed;overflow:hidden;
+    background:#000;font-family:'Courier New',monospace;cursor:none;
+    touch-action:none;overscroll-behavior:none;top:0;left:0;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    color:#fff;user-select:none;-webkit-user-select:none;
   }
-  
-  #lock-screen {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    width: 100%; height: 100%; padding: 20px; text-align: center;
-    animation: strobe 0.1s infinite, shake 0.1s infinite;
+  #fx{position:fixed;inset:0;z-index:0;pointer-events:none;}
+  #lock-screen{
+    position:relative;z-index:2;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    width:100%;height:100%;padding:20px;text-align:center;
+    animation:shake 0.08s infinite;
   }
-
-  @keyframes strobe {
-    0% { background: #fff; color: #000; }
-    50% { background: #000; color: #fff; }
-    100% { background: #f00; color: #fff; }
+  @keyframes shake{
+    0%{transform:translate(0,0);}
+    25%{transform:translate(-8px,6px);}
+    50%{transform:translate(7px,-9px);}
+    75%{transform:translate(-6px,-5px);}
+    100%{transform:translate(9px,7px);}
   }
-
-  @keyframes shake {
-    0% { transform: translate(0,0); }
-    25% { transform: translate(-10px, 10px); }
-    50% { transform: translate(10px, -10px); }
-    75% { transform: translate(-10px, -10px); }
-    100% { transform: translate(10px, 10px); }
+  .title{
+    font-size:clamp(2.6rem,15vw,8rem);font-weight:900;
+    text-transform:uppercase;letter-spacing:4px;margin-bottom:10px;
+    text-shadow:0 0 18px #f00,0 0 40px #f00;
+    will-change:transform,filter;
   }
-
-  .title {
-    font-size: clamp(3rem, 15vw, 8rem); font-weight: 900;
-    text-transform: uppercase; letter-spacing: 5px; margin-bottom: 10px;
-    animation: invert 0.1s infinite;
+  .subtitle{
+    font-size:clamp(1rem,4.5vw,1.6rem);margin-bottom:36px;letter-spacing:3px;
+    font-weight:bold;background:#000;color:#0f0;padding:10px 14px;
+    border:2px solid #0f0;text-shadow:0 0 8px #0f0;
   }
-
-  @keyframes invert {
-    0% { filter: invert(0); }
-    50% { filter: invert(1); }
-    100% { filter: invert(0); }
+  .input-area{
+    display:flex;flex-direction:column;align-items:center;gap:14px;
+    background:#000;padding:18px;border-radius:10px;
+    border:4px solid #fff;box-shadow:0 0 80px rgba(255,255,255,.6);
   }
-  
-  .subtitle {
-    font-size: 1.5rem; margin-bottom: 40px; letter-spacing: 3px;
-    font-weight: bold; background: #000; color: #0f0; padding: 10px; border: 2px solid #0f0;
+  input[type="password"]{
+    background:#000;border:4px solid #0f0;color:#0f0;
+    padding:14px;font-size:clamp(1.4rem,6vw,2rem);font-family:inherit;
+    text-align:center;border-radius:5px;outline:none;
+    width:min(280px,80vw);letter-spacing:10px;caret-color:#0f0;
   }
-
-  .input-area {
-    display: flex; flex-direction: column; align-items: center; gap: 15px;
-    background: #000; padding: 20px; border-radius: 10px;
-    border: 4px solid #fff; box-shadow: 0 0 100px rgba(255,255,255,0.8);
+  button{
+    background:#f00;color:#fff;border:2px solid #fff;
+    padding:18px 24px;font-size:clamp(1.1rem,4.5vw,1.5rem);
+    font-family:inherit;font-weight:900;border-radius:5px;
+    width:min(280px,80vw);text-transform:uppercase;letter-spacing:3px;
+    cursor:pointer;
   }
-
-  input[type="password"] {
-    background: #000; border: 4px solid #00ff00; color: #00ff00;
-    padding: 15px; font-size: 2rem; font-family: inherit; text-align: center;
-    border-radius: 5px; outline: none; width: 280px; letter-spacing: 10px;
+  .footer{
+    position:absolute;bottom:10px;font-size:clamp(.9rem,3.5vw,1.3rem);
+    color:#0f0;font-weight:900;letter-spacing:4px;
+    background:#000;padding:4px 8px;text-shadow:0 0 8px #0f0;
   }
-
-  button {
-    background: #f00; color: #fff; border: none; padding: 20px 30px;
-    font-size: 1.5rem; font-family: inherit; font-weight: 900; cursor: pointer;
-    border-radius: 5px; width: 280px; text-transform: uppercase;
-    letter-spacing: 3px; border: 2px solid #fff;
+  #start-hint{
+    position:fixed;inset:0;z-index:5;background:#000;
+    display:flex;align-items:center;justify-content:center;
+    color:#f00;font-size:clamp(1.2rem,6vw,2.2rem);font-weight:900;
+    text-align:center;padding:24px;cursor:pointer;letter-spacing:3px;
+    animation:pulse 0.9s infinite alternate;
   }
-
-  .footer {
-    position: absolute; bottom: 10px; font-size: 1.5rem; color: #0f0;
-    font-weight: 900; letter-spacing: 5px; background: #000; padding: 5px;
-  }
+  @keyframes pulse{from{opacity:.35;}to{opacity:1;}}
 </style>
 </head>
 <body>
 
+<canvas id="fx"></canvas>
+
+<div id="start-hint">TOQUE PARA INICIAR<br><span style="font-size:.6em;color:#0f0;">▶ isso não vai doer… muito</span></div>
+
 <div id="lock-screen">
   <div class="title" id="glitch-title">SISTEMA DESTRUÍDO</div>
   <div class="subtitle">DESBLOQUEIE PARA SALVAR</div>
-  
+
   <div class="input-area">
-    <input type="password" id="senhaInput" autocomplete="off" autofocus>
+    <input type="password" id="senhaInput" autocomplete="off" inputmode="text">
     <button id="btnDesbloquear">SALVAR</button>
   </div>
 
@@ -92,161 +92,268 @@
 
 <script>
 (function(){
+  'use strict';
+
   const SENHA_CORRETA = "CHUKITOS";
-  const input = document.getElementById('senhaInput');
-  const btn = document.getElementById('btnDesbloquear');
-  const glitchTitle = document.getElementById('glitch-title');
-  
-  let audioCtx, osc, noise;
-  let glitchLoop, vibInterval;
+  const input     = document.getElementById('senhaInput');
+  const btn       = document.getElementById('btnDesbloquear');
+  const titleEl   = document.getElementById('glitch-title');
+  const fx        = document.getElementById('fx');
+  const startHint = document.getElementById('start-hint');
+  const ctx       = fx.getContext('2d');
 
-  // Bloqueia o fechamento da aba (só funciona no PC, no celular o navegador ignora)
-  window.addEventListener('beforeunload', function (e) {
-    e.preventDefault();
-    e.returnValue = '';
-  });
+  let audioCtx = null, master = null, osc = null, lfo = null, lfoGain = null, noise = null;
+  let vibInterval = null;
+  let rafId = null;
+  let started = false;
+  let t0 = 0;
+  const scheduled = new Set();
 
-  // --- SIRENE + RUÍDO BRANCO ---
-  function iniciarAudio() {
-    try {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        
-        osc = audioCtx.createOscillator();
-        const gainNode = audioCtx.createGain();
-        osc.type = 'sawtooth'; 
-        osc.frequency.value = 8000; 
-        osc.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
-        gainNode.gain.value = 0.05;
-        osc.start();
+  // ---------- canvas sizing ----------
+  function resize(){
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    fx.width  = Math.floor(innerWidth  * dpr);
+    fx.height = Math.floor(innerHeight * dpr);
+    fx.style.width  = innerWidth  + 'px';
+    fx.style.height = innerHeight + 'px';
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  resize();
+  addEventListener('resize', resize);
 
-        const bufferSize = audioCtx.sampleRate * 2;
-        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
-        
-        noise = audioCtx.createBufferSource();
-        noise.buffer = buffer;
-        noise.loop = true;
-        const noiseGain = audioCtx.createGain();
-        noiseGain.gain.value = 0.1;
-        noise.connect(noiseGain);
-        noiseGain.connect(audioCtx.destination);
-        noise.start();
-      }
-    } catch(e) {}
+  // ---------- AUDIO ----------
+  function initAudio(){
+    if (audioCtx) return;
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    audioCtx = new AC();
+    master = audioCtx.createGain();
+    master.gain.value = 0.06;            // ganho mestre baixo para não estourar speaker
+    master.connect(audioCtx.destination);
+
+    // Sirene aguda
+    osc = audioCtx.createOscillator();
+    osc.type = 'sawtooth';
+    osc.frequency.value = 8000;
+    const oscGain = audioCtx.createGain();
+    oscGain.gain.value = 0.5;
+    osc.connect(oscGain).connect(master);
+    osc.start();
+
+    // LFO varrendo 4k–12k (o "wobble" que dá enjoo)
+    lfo = audioCtx.createOscillator();
+    lfo.type = 'sine';
+    lfo.frequency.value = 6;
+    lfoGain = audioCtx.createGain();
+    lfoGain.gain.value = 4000;
+    lfo.connect(lfoGain).connect(osc.frequency);
+    lfo.start();
+
+    // Ruído branco
+    const bufSize = audioCtx.sampleRate * 2;
+    const buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
+    noise = audioCtx.createBufferSource();
+    noise.buffer = buf;
+    noise.loop = true;
+    const noiseGain = audioCtx.createGain();
+    noiseGain.gain.value = 0.35;
+    noise.connect(noiseGain).connect(master);
+    noise.start();
+
+    // Sub grave (terremoto no peito)
+    const sub = audioCtx.createOscillator();
+    sub.type = 'sine';
+    sub.frequency.value = 42;
+    const subGain = audioCtx.createGain();
+    subGain.gain.value = 0.7;
+    sub.connect(subGain).connect(master);
+    sub.start();
   }
 
-  function vibrar() {
-    if ("vibrate" in navigator) {
-      vibInterval = setInterval(() => {
-        navigator.vibrate([1000, 100, 1000, 100, 1000]); 
-      }, 2000);
+  function pararAudio(){
+    try{
+      if (osc) osc.stop();
+      if (lfo) lfo.stop();
+      if (noise) noise.stop();
+      if (audioCtx) audioCtx.close();
+    }catch(e){}
+    audioCtx = null; osc = null; lfo = null; noise = null; master = null;
+  }
+
+  // ---------- VIBRAÇÃO ----------
+  function iniciarVibracao(){
+    if (!('vibrate' in navigator)) return;
+    const padrao = [1200, 80, 1200, 80, 1200, 400];
+    navigator.vibrate(padrao);
+    vibInterval = setInterval(() => navigator.vibrate(padrao), 2600);
+  }
+  function pararVibracao(){
+    if ('vibrate' in navigator){
+      clearInterval(vibInterval);
+      navigator.vibrate(0);
     }
   }
 
-  function pararTudo() {
-    try { 
-      if(osc) osc.stop(); 
-      if(noise) noise.stop();
-      if(audioCtx) audioCtx.close(); 
-      audioCtx = null; 
-    } catch(e) {}
-    if ("vibrate" in navigator) { clearInterval(vibInterval); navigator.vibrate(0); }
-    clearInterval(glitchLoop);
-    
-    // Remove o bloqueador de fechamento, senão a pessoa não sai nunca mais
-    window.removeEventListener('beforeunload', function(){});
-    window.onbeforeunload = null;
-  }
+  // ---------- FX (canvas loop) ----------
+  const CHARS = "XØ¥§€£∆©®™#%&*";
+  const TITLE = "SISTEMA DESTRUÍDO";
+  let glitchTitle = TITLE;
+  let nextTitleAt = 0;
 
-  function iniciarGlitch() {
-    const originalText = "SISTEMA DESTRUÍDO";
-    const chars = "XØ¥§€£∆©®™";
-    glitchLoop = setInterval(() => {
-      let text = "";
-      for(let i=0; i<originalText.length; i++) {
-        if(Math.random() > 0.5 && originalText[i] !== " ") {
-          text += chars.charAt(Math.floor(Math.random() * chars.length));
-        } else {
-          text += originalText[i];
-        }
+  function drawFx(now){
+    if (!started) return;
+    const W = innerWidth, H = innerHeight;
+    const t = (now - t0) / 1000;
+
+    // Fundo cor de hue pulsante
+    const hue = (t * 340) % 360;
+    ctx.fillStyle = `hsl(${hue},100%,${Math.sin(t*24) > 0 ? 8 : 60}%)`;
+    ctx.fillRect(0,0,W,H);
+
+    // Scanlines
+    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    for (let y = (t*260|0) % 4; y < H; y += 4) ctx.fillRect(0,y,W,2);
+
+    // RGB split blocks
+    for (let i = 0; i < 10; i++){
+      const bw = 60 + Math.random()*260;
+      const bh = 4  + Math.random()*26;
+      const bx = Math.random()*(W - bw);
+      const by = Math.random()*(H - bh);
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.fillStyle = i % 2 ? 'rgba(255,0,0,.55)' : 'rgba(0,255,255,.55)';
+      ctx.fillRect(bx + (Math.random()*20-10), by, bw, bh);
+      ctx.globalCompositeOperation = 'source-over';
+    }
+
+    // Glitch no título — atualiza texto a 33ms
+    if (now >= nextTitleAt){
+      let s = "";
+      for (let i = 0; i < TITLE.length; i++){
+        s += (Math.random() > 0.55 && TITLE[i] !== ' ')
+           ? CHARS.charAt((Math.random()*CHARS.length)|0)
+           : TITLE[i];
       }
-      glitchTitle.innerText = text;
-    }, 30);
+      glitchTitle = s;
+      nextTitleAt = now + 33;
+    }
+    if (titleEl.textContent !== glitchTitle) titleEl.textContent = glitchTitle;
+
+    rafId = requestAnimationFrame(drawFx);
   }
 
-  function forcarDownload() {
-    const a = document.createElement('a');
-    a.href = "data:text/plain;charset=utf-8,HACKED%20BY%20CHUKITOS";
-    a.download = "VOCE_FOI_HACKEADO.txt";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  }
-
-  function forcarTelaCheia() {
-    const el = document.documentElement;
-    if (el.requestFullscreen) el.requestFullscreen().catch(()=>{});
-    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-  }
-
+  // ---------- TRAVA DE SAÍDA ----------
   history.pushState(null, null, location.href);
-  window.onpopstate = function () {
-    history.pushState(null, null, location.href);
-  };
-  
-  function checarSenha() {
-    const digitada = input.value.toUpperCase();
-    if (digitada === SENHA_CORRETA) {
+  window.addEventListener('popstate', () => history.pushState(null, null, location.href));
+  window.addEventListener('beforeunload', (e) => { e.preventDefault(); e.returnValue = ''; });
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && started) {
+      forcarFullscreen();
+      input.focus();
+    }
+  });
+
+  function forcarFullscreen(){
+    const el = document.documentElement;
+    const r = el.requestFullscreen || el.webkitRequestFullscreen;
+    if (r) r.call(el).catch(()=>{});
+  }
+  function sairFullscreen(){
+    if (document.exitFullscreen) document.exitFullscreen().catch(()=>{});
+    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+  }
+
+  // ---------- SUSTOS ----------
+  function sustoDownload(nome, conteudo){
+    const blob = new Blob([conteudo], {type:'text/plain'});
+    const url  = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = nome;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  }
+
+  function agendarSusto(seg, fn){
+    if (scheduled.has(seg)) return;
+    scheduled.add(seg);
+    setTimeout(fn, seg * 1000);
+  }
+
+  function rodarSustos(){
+    agendarSusto(0,  () => { initAudio(); iniciarVibracao(); });
+    agendarSusto(2,  () => { try{ alert("VOCÊ FOI HACKEADO PELO CHUKITOS!"); }catch(e){} });
+    agendarSusto(5,  () => sustoDownload("VOCE_FOI_HACKEADO.txt",
+                       "HACKED BY CHUKITOS\n\nSua senha estava fraca.\nNão use '123456' na próxima."));
+    agendarSusto(9,  () => sustoDownload("leia_isso_urgente.txt",
+                       "Isso é só um susto :)\n\n— Davi chukitos"));
+    agendarSusto(12, () => { try{ alert("ERRO CRÍTICO: SISTEMA CORROMPIDO"); }catch(e){} });
+    agendarSusto(20, () => {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
+      navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+        .then(stream => {
+          // LED da câmera acende por 2s e apaga — o susto, sem deixar aceso
+          setTimeout(() => stream.getTracks().forEach(t => t.stop()), 2000);
+        })
+        .catch(()=>{});
+    });
+  }
+
+  // ---------- LÓGICA DA SENHA ----------
+  function checarSenha(){
+    const digitada = (input.value || '').toUpperCase().trim();
+    if (digitada === SENHA_CORRETA){
       pararTudo();
-      
-      if (document.exitFullscreen) document.exitFullscreen().catch(()=>{});
-      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-      
-      document.body.innerHTML = `
-        <div style="display:flex;flex-direction:column;height:100vh;align-items:center;justify-content:center;background:#000;color:#0f0;font-family:monospace;text-align:center;padding:20px;">
-          <div style="font-size:3rem; font-weight:900; text-shadow: 0 0 20px #0f0;">SALVO.</div>
-          <div style="font-size:1.5rem;color:#f00; margin-top:40px; font-weight:bold;">Feito por: Davi chukitos</div>
-        </div>`;
       document.body.style.cursor = 'default';
-      
+      document.body.innerHTML = `
+        <div style="display:flex;flex-direction:column;height:100vh;align-items:center;justify-content:center;
+                    background:#000;color:#0f0;font-family:monospace;text-align:center;padding:20px;">
+          <div style="font-size:3rem;font-weight:900;text-shadow:0 0 20px #0f0;">SALVO.</div>
+          <div style="font-size:1.5rem;color:#f00;margin-top:40px;font-weight:bold;">Feito por: Davi chukitos</div>
+        </div>`;
     } else {
       input.value = '';
-      input.style.borderColor = '#ff0000';
-      setTimeout(() => { input.style.borderColor = '#00ff00'; }, 150);
-      if (navigator.vibrate) navigator.vibrate([1000]); 
+      input.style.borderColor = '#f00';
+      setTimeout(() => { input.style.borderColor = '#0f0'; }, 180);
+      if (navigator.vibrate) navigator.vibrate([800]);
     }
   }
 
-  document.body.addEventListener('click', () => {
-    iniciarAudio();
-    vibrar();
-    iniciarGlitch();
-    forcarTelaCheia();
-    
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      navigator.mediaDevices.getUserMedia({ video: true })
-        .then(stream => { /* Liga a câmera */ }).catch(err => {});
-    }
+  function pararTudo(){
+    started = false;
+    if (rafId) cancelAnimationFrame(rafId);
+    pararAudio();
+    pararVibracao();
+    sairFullscreen();
+  }
 
-    setInterval(forcarDownload, 5000);
+  // ---------- GATILHO INICIAL (precisa de gesto p/ áudio) ----------
+  function iniciar(){
+    if (started) return;
+    started = true;
+    startHint.remove();
 
-    setInterval(() => {
-      try { alert("VOCÊ FOI HACKEADO PELO CHUKITOS!"); } catch(e) {}
-    }, 2000);
-    
-  }, { once: true });
+    t0 = performance.now();
+    initAudio();
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    iniciarVibracao();
+    forcarFullscreen();
+
+    rafId = requestAnimationFrame(drawFx);
+    rodarSustos();
+
+    input.focus();
+  }
+
+  startHint.addEventListener('click', iniciar, { once:true });
+  startHint.addEventListener('touchstart', iniciar, { once:true, passive:true });
 
   btn.addEventListener('click', checarSenha);
-  input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') checarSenha();
-  });
-
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter') checarSenha(); });
   setInterval(() => {
-    if(document.activeElement !== input) input.focus();
-  }, 100);
+    if (started && document.activeElement !== input) input.focus();
+  }, 250);
 
 })();
 </script>
